@@ -126,6 +126,37 @@
   .b-soon { background: var(--warn-tint); color: var(--warn); }
   .b-rain { background: var(--rain-tint); color: var(--rain); }
   .b-late { background: var(--brand-tint); color: var(--brand-dark); }
+  .filters { display: flex; gap: 6px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; }
+  .filters::-webkit-scrollbar { display: none; }
+  .fsel { appearance: none; -webkit-appearance: none; font: inherit; font-size: 12px; font-weight: 700; color: var(--ink-2);
+          background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238b90a5' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 10px center;
+          border: 1px solid var(--line); border-radius: 999px; padding: 7px 26px 7px 12px; flex-shrink: 0; cursor: pointer; }
+  .fsel.on { border-color: var(--brand); color: var(--brand-dark); background-color: var(--brand-tint); }
+  .fsel option { color: #161a2b; background: #fff; }
+  .fclear { font-size: 12px; font-weight: 700; color: var(--brand); padding: 7px 8px; flex-shrink: 0; }
+  .stars-meta { color: #b45309; font-weight: 800; }
+  :root[data-theme="dark"] .stars-meta { color: #fbbf24; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stars-meta { color: #fbbf24; } }
+  .stars-meta i { font-style: normal; font-weight: 500; color: var(--muted); margin-left: 2px; }
+  .price-meta { font-weight: 800; color: #15803d; letter-spacing: .5px; }
+  :root[data-theme="dark"] .price-meta { color: #86efac; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .price-meta { color: #86efac; } }
+  .social { margin-top: 14px; }
+  .social-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .social-row a { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 6px; border-radius: 12px;
+                  background: var(--surface); border: 1px solid var(--line); font-size: 12px; font-weight: 700; text-decoration: none; color: var(--ink); }
+  .soc-ic { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; flex-shrink: 0; }
+  .soc-ic svg { width: 14px; height: 14px; }
+  .rate-box { background: var(--surface); border-radius: 14px; padding: 14px; margin-top: 12px; }
+  .rate-box h3 { margin: 0 0 4px; font-size: 16px; font-family: var(--display); }
+  .rate-avg { display: flex; align-items: baseline; gap: 8px; font-size: 13px; color: var(--muted); }
+  .rate-avg b { font-size: 18px; color: var(--ink); }
+  .star-row { display: flex; gap: 4px; margin: 10px 0 12px; }
+  .star { font-size: 32px; line-height: 1; color: var(--line); padding: 2px; transition: transform .1s, color .1s; }
+  .star.on, .star.hover { color: #f59e0b; }
+  .star:active { transform: scale(.85); }
+  .price-label { font-size: 12px; font-weight: 700; color: var(--ink-2); margin-bottom: 6px; }
+  .price-seg { margin-bottom: 6px; }
   .more { display: block; margin: 12px auto 0; font-weight: 700; color: var(--brand); font-size: 13px; padding: 8px 14px; }
 
   /* results */
@@ -317,6 +348,19 @@
 
       <section class="block">
         <div class="sec-head"><h2 id="listTitle">Hawker centres</h2><span id="listSub"></span></div>
+        <div class="filters" role="group" aria-label="Filters">
+          <select id="fRadius" class="fsel" aria-label="Distance">
+            <option value="0">Any distance</option><option value="0.5">Within 500 m</option><option value="1">Within 1 km</option>
+            <option value="2">Within 2 km</option><option value="5">Within 5 km</option><option value="10">Within 10 km</option>
+          </select>
+          <select id="fRating" class="fsel" aria-label="Minimum rating">
+            <option value="0">Any rating</option><option value="3">★ 3.0+</option><option value="4">★ 4.0+</option><option value="4.5">★ 4.5+</option>
+          </select>
+          <select id="fPrice" class="fsel" aria-label="Price">
+            <option value="0">Any price</option><option value="1">$ Under $5</option><option value="2">$$ $5 - $8</option><option value="3">$$$ Over $8</option>
+          </select>
+          <button class="fclear hidden" id="fClear">Clear</button>
+        </div>
         <div class="centres" id="centres">
           <div class="hc"><div class="photo sk"></div><div class="info"><div class="sk" style="height:14px;width:70%"></div><div class="sk" style="height:12px;width:50%;margin-top:8px"></div></div></div>
         </div>
@@ -328,7 +372,8 @@
     <p class="foot">Hawker centres, photos &amp; cleaning closures: NEA via data.gov.sg. Weather: NEA 2-hour forecast.
       Travel times and prices are estimates.<br>
       <a href="/about" style="color:var(--brand);font-weight:700">About HawkerFit</a> ·
-      <a href="/creator" style="color:var(--brand);font-weight:700">Made by Keith Lim</a></p>
+      <a href="/creator" style="color:var(--brand);font-weight:700">Made by Keith Lim</a> ·
+      <a href="/sponsor" style="color:var(--brand);font-weight:700">Sponsor</a></p>
   </div>
 
   <!-- ===================== SCAN ===================== -->
@@ -500,20 +545,55 @@ function travelMeta(c) {
   return `<span>${icon("pin")}${c.distance_km} km</span>` +
     (c.distance_km <= 3 ? `<span>${icon("walk")}${c.walk_min} min</span>` : "") + `<span>${icon("car")}~${c.drive_min} min</span>`;
 }
+const PRICE_SIGNS = { 1: "$", 2: "$$", 3: "$$$" };
+function ratingMeta(c) {
+  const parts = [];
+  if (c.rating != null) parts.push(`<span class="stars-meta">★ ${c.rating.toFixed(1)}<i>(${c.rating_count})</i></span>`);
+  if (c.price) parts.push(`<span class="price-meta" title="${esc(c.price_label)} per meal">${PRICE_SIGNS[c.price]}</span>`);
+  return parts.join("");
+}
 function centreCard(c) {
   const known = c.known_for?.length ? c.known_for.slice(0, 2).map(k => k.split(" (")[0]).join(" · ")
                : (c.food_stalls ? `${c.food_stalls} food stalls` : c.address);
   return `<button class="hc" data-id="${esc(c.id)}">${photoEl(c)}
     <div class="info"><h3>${esc(c.name)}</h3><div class="sub">${esc(known)}</div>
-      <div class="metas">${travelMeta(c)}${c.distance_km == null && c.food_stalls ? `<span>${icon("store")}${c.food_stalls} stalls</span>` : ""}</div>
+      <div class="metas">${ratingMeta(c)}${travelMeta(c)}${c.distance_km == null && c.food_stalls ? `<span>${icon("store")}${c.food_stalls} stalls</span>` : ""}</div>
       ${badges(c)}</div></button>`;
 }
+
+// ---------- filters: radius, rating, price ----------
+let filters = { radius: 0, rating: 0, price: 0 };
+try { filters = { ...filters, ...JSON.parse(store.get("hf-filters") || "{}") }; } catch {}
+function passesFilters(c) {
+  if (filters.radius && loc && (c.distance_km == null || c.distance_km > filters.radius)) return false;
+  if (filters.rating && (c.rating == null || c.rating < filters.rating)) return false;
+  if (filters.price && c.price !== filters.price) return false;
+  return true;
+}
+function syncFilterUI() {
+  $("#fRadius").value = String(filters.radius); $("#fRating").value = String(filters.rating); $("#fPrice").value = String(filters.price);
+  ["fRadius", "fRating", "fPrice"].forEach(id => $("#" + id).classList.toggle("on", $("#" + id).value !== "0"));
+  $("#fClear").classList.toggle("hidden", !(filters.radius || filters.rating || filters.price));
+}
+function setFilter(k, v) {
+  if (k === "radius" && v && !loc) { toast("Set your location first to filter by distance."); $("#locBtn").click(); v = 0; }
+  filters[k] = v; store.set("hf-filters", JSON.stringify(filters)); shown = 10; syncFilterUI(); renderCentres();
+}
+$("#fRadius").addEventListener("change", e => setFilter("radius", Number(e.target.value)));
+$("#fRating").addEventListener("change", e => setFilter("rating", Number(e.target.value)));
+$("#fPrice").addEventListener("change", e => setFilter("price", Number(e.target.value)));
+$("#fClear").addEventListener("click", () => { filters = { radius: 0, rating: 0, price: 0 }; store.set("hf-filters", null); shown = 10; syncFilterUI(); renderCentres(); });
+syncFilterUI();
+
 function renderCentres() {
   $("#listTitle").textContent = loc ? "Nearest hawker centres" : "Hawker centres";
-  $("#listSub").textContent = `${centres.length} centres · ${centres.filter(c => c.closed_today).length} closed today`;
-  let list = centres;
-  if (!loc) list = [...centres].sort((a, b) => (b.known_for?.length ? 1 : 0) - (a.known_for?.length ? 1 : 0));
-  $("#centres").innerHTML = list.slice(0, shown).map(centreCard).join("");
+  let list = centres.filter(passesFilters);
+  const filtered = list.length !== centres.length;
+  $("#listSub").textContent = filtered ? `${list.length} of ${centres.length} match`
+    : `${centres.length} centres · ${centres.filter(c => c.closed_today).length} closed today`;
+  if (!loc) list = [...list].sort((a, b) => ((b.rating ?? 0) - (a.rating ?? 0)) || ((b.known_for?.length ? 1 : 0) - (a.known_for?.length ? 1 : 0)));
+  $("#centres").innerHTML = list.length ? list.slice(0, shown).map(centreCard).join("")
+    : `<div class="note">${icon("info")}<span>No hawker centres match these filters yet${filters.rating || filters.price ? ". Ratings are new, so try fewer filters, or rate the places you've been to!" : "."}</span></div>`;
   $("#moreBtn").classList.toggle("hidden", shown >= list.length);
   document.querySelectorAll(".hc").forEach(el => el.addEventListener("click", () => openCentre(byId[el.dataset.id])));
 }
@@ -542,9 +622,66 @@ function openCentre(c) {
     ${c.description ? `<p class="text">${esc(c.description)}</p>` : ""}
     ${c.nearest_mrt ? `<p class="text">${icon("train", 14)} Nearest MRT: ${esc(c.nearest_mrt)}</p>` : ""}
     ${dirLinks(c)}
+    ${socialLinks(c)}
+    <div class="rate-box" id="rateBox"></div>
     <button class="wide primary" id="askHere">${icon("sparkle", 18)}What should I eat here?</button>`, (s) => {
     $("#askHere", s).addEventListener("click", () => { closeSheet(); search(`What should I eat at ${c.name}?`, c.name); });
+    renderRateBox(c, $("#rateBox", s));
   });
+}
+
+// ---------- food reviews on social media (search links, nothing is scraped) ----------
+function socialLinks(c) {
+  const q = encodeURIComponent(`${c.name} Singapore food`);
+  const links = [
+    ["TikTok", `https://www.tiktok.com/search?q=${q}`, "#000000", "M16 3c.4 2.2 1.8 3.6 4 3.9v3.2c-1.5 0-2.9-.4-4-1.1V15a5.5 5.5 0 1 1-5.5-5.5c.3 0 .6 0 .9.1v3.3a2.3 2.3 0 1 0 1.4 2.1V3z"],
+    ["YouTube", `https://www.youtube.com/results?search_query=${q}`, "#ff0000", "M21.6 7.2c-.2-1-1-1.7-2-1.9C17.9 5 12 5 12 5s-5.9 0-7.6.3c-1 .2-1.8.9-2 1.9C2 8.9 2 12 2 12s0 3.1.4 4.8c.2 1 1 1.7 2 1.9 1.7.3 7.6.3 7.6.3s5.9 0 7.6-.3c1-.2 1.8-.9 2-1.9.4-1.7.4-4.8.4-4.8s0-3.1-.4-4.8zM10 15V9l5.2 3z"],
+    ["Facebook", `https://www.facebook.com/search/top?q=${q}`, "#1877f2", "M14 8h3V4.5h-3c-2.5 0-4 1.6-4 4V11H7.5v3.5H10V21h3.5v-6.5H16l.5-3.5h-3V8.8c0-.5.3-.8.5-.8z"],
+  ];
+  return `<div class="social"><div class="price-label">See food reviews of this place</div><div class="social-row">${links.map(([name, url, color, path]) =>
+    `<a href="${url}" target="_blank" rel="noopener" aria-label="${name} reviews"><span class="soc-ic" style="background:${color}"><svg viewBox="0 0 24 24" style="fill:#fff;stroke:none"><path d="${path}"/></svg></span>${name}</a>`).join("")}</div></div>`;
+}
+
+// ---------- community ratings ----------
+function voterId() {
+  let v = store.get("hf-voter");
+  if (!v) {
+    v = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2)).replace(/[^a-zA-Z0-9-]/g, "");
+    store.set("hf-voter", v);
+  }
+  return v;
+}
+function myVotes() { try { return JSON.parse(store.get("hf-votes") || "{}"); } catch { return {}; } }
+function renderRateBox(c, el) {
+  const mine = myVotes()[c.id] || {};
+  const summary = c.rating != null
+    ? `<div class="rate-avg"><b>★ ${c.rating.toFixed(1)}</b><span>${c.rating_count} rating${c.rating_count === 1 ? "" : "s"}${c.price_label ? ` · typical meal ${esc(c.price_label)}` : ""}</span></div>`
+    : `<div class="rate-avg"><span>No ratings yet. Be the first!</span></div>`;
+  el.innerHTML = `<h3>Rate this hawker centre</h3>${summary}
+    <div class="star-row" role="radiogroup" aria-label="Your rating">${[1, 2, 3, 4, 5].map(n =>
+      `<button class="star ${mine.stars >= n ? "on" : ""}" data-s="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}</div>
+    <div class="price-label">Typical price per meal</div>
+    <div class="seg price-seg">${[1, 2, 3].map(p =>
+      `<button data-p="${p}" aria-pressed="${mine.price === p}">${PRICE_SIGNS[p]}<small>${["", "Under $5", "$5 - $8", "Over $8"][p]}</small></button>`).join("")}</div>
+    <p class="disclaim" id="rateMsg">${mine.stars || mine.price ? "Thanks for rating! You can change your vote any time." : "Tap the stars and a price to share your experience."}</p>`;
+  const send = async (patch) => {
+    const vote = { ...myVotes()[c.id], ...patch };
+    try {
+      const res = await fetch("/api/rate", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ centre_id: c.id, voter: voterId(), stars: vote.stars ?? null, price: vote.price ?? null }) });
+      if (!res.ok) return toast(await readError(res));
+      const s = await res.json();
+      const all = myVotes(); all[c.id] = vote; store.set("hf-votes", JSON.stringify(all));
+      Object.assign(c, s); renderRateBox(c, el); renderCentres();
+      toast("Thanks! Your rating is saved.");
+    } catch { toast("Couldn't save your rating. Check your connection."); }
+  };
+  el.querySelectorAll(".star").forEach(b => {
+    b.addEventListener("click", () => send({ stars: Number(b.dataset.s) }));
+    b.addEventListener("mouseenter", () => el.querySelectorAll(".star").forEach(x => x.classList.toggle("hover", Number(x.dataset.s) <= Number(b.dataset.s))));
+    b.addEventListener("mouseleave", () => el.querySelectorAll(".star").forEach(x => x.classList.remove("hover")));
+  });
+  el.querySelectorAll(".price-seg button").forEach(b => b.addEventListener("click", () => send({ price: Number(b.dataset.p) })));
 }
 
 
@@ -552,7 +689,7 @@ function openCentre(c) {
 const WHEEL_COLORS = ["#4338ca", "#d9f99d", "#6366f1", "#fde68a", "#312e81", "#a5b4fc", "#c2410c", "#fecaca"];
 let wheelRot = 0, wheelPool = [], spinning = false, spinMode = "near";
 function buildPool() {
-  const open = centres.filter(c => !c.closed_today);
+  const open = centres.filter(c => !c.closed_today && passesFilters(c));
   let pool;
   if (spinMode === "supper") pool = open.filter(c => c.open_late);
   else if (spinMode === "famous") pool = open.filter(c => c.known_for?.length);

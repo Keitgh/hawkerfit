@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sponsor HawkerFit</title>
+<meta name="description" content="Sponsorship for HawkerFit is a work in progress. Get in touch if you'd like to support the project.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/page.css">
+<script>try { const t = localStorage.getItem("hf-theme"); if (t && t !== "system") document.documentElement.setAttribute("data-theme", t); } catch {}</script>
+<style>
+  .wip { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; padding: 6px 12px; border-radius: 999px;
+         background: #fef3c7; color: #92400e; font-size: 12px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
+  :root[data-theme="dark"] .wip { background: #3a2a0c; color: #fcd34d; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wip { background: #3a2a0c; color: #fcd34d; } }
+  .wip i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.6s infinite; }
+  @keyframes pulse { 50% { opacity: .3; } }
+  .wip + h1 { margin-top: 14px; }
+  .soon { opacity: .75; }
+  .soon b::after { content: "Coming soon"; margin-left: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase;
+                   letter-spacing: .3px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="logo" href="/"><span class="mark"><svg viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M8 7c0-1.5 1-1.5 1-3M12 7c0-1.5 1-1.5 1-3M16 7c0-1.5 1-1.5 1-3"/></svg></span><span>hawker<em>fit</em></span></a>
+    <a class="back" href="/"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Back to app</a>
+  </div>
+
+  <span class="wip"><i></i>Work in progress</span>
+  <h1>Sponsor <span>HawkerFit</span></h1>
+  <p class="lead">HawkerFit is a free side project, and sponsorships are still being worked out.
+    This page will grow as the project does.</p>
+  <p>Running HawkerFit costs real money every day: the AI that answers food questions and scans meals,
+    plus the server that keeps the app online. Sponsors would help keep it free for everyone.</p>
+
+  <h2>Ideas being explored</h2>
+  <div class="grid">
+    <div class="card feat soon"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+      <div><b>Hawker spotlight</b><span>Help local hawkers and food brands get discovered by people nearby.</span></div></div>
+    <div class="card feat soon"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11"/></svg></span>
+      <div><b>Fitness partners</b><span>Gyms and fitness brands that want to reach people tracking their macros.</span></div></div>
+    <div class="card feat soon"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21l-8-8a5 5 0 0 1 8-6 5 5 0 0 1 8 6z"/></svg></span>
+      <div><b>Supporters</b><span>Simple ways for fans to chip in towards running costs.</span></div></div>
+  </div>
+
+  <h2>Interested?</h2>
+  <div class="card">
+    <p style="margin:0">Nothing is set in stone yet, so this is a great time to shape it. If you'd like to sponsor,
+      partner or just chat about ideas, reach out on LinkedIn.</p>
+    <div class="btns">
+      <a class="btn" href="https://www.linkedin.com/in/keith-lim-guang-rong-27b140358/" target="_blank" rel="noopener">Get in touch on LinkedIn</a>
+      <a class="btn alt" href="/about">About HawkerFit</a>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>© 2026 HawkerFit</span>
+    <a href="/">App</a>
+    <a href="/about">About</a>
+    <a href="/creator">Creator</a>
+  </div>
+</div>
+</body>
+</html>

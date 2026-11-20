@@ -17,6 +17,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+import ratings
 import sg_data
 
 BASE = Path(__file__).parent
@@ -80,11 +81,14 @@ def in_singapore(lat, lng) -> bool:
     return lat is not None and lng is not None and 1.15 <= lat <= 1.48 and 103.6 <= lng <= 104.1
 
 
-def public_centre(c: dict, lat=None, lng=None, weather=None) -> dict:
-    """What the browser gets for one centre: static info + today's status + distance."""
+def public_centre(c: dict, lat=None, lng=None, weather=None, scores: dict | None = None) -> dict:
+    """What the browser gets for one centre: static info + today's status + distance + ratings."""
     out = {k: c.get(k) for k in ("id", "name", "address", "lat", "lng", "photo", "food_stalls",
                                   "description", "known_for", "nearest_mrt", "open_late", "source")}
     out.update(sg_data.closure_status(c))
+    s = (scores or {}).get(c["id"]) or {}
+    out.update(rating=s.get("rating"), rating_count=s.get("count", 0),
+               price=s.get("price"), price_label=s.get("price_label"))
     out["weather"] = sg_data.weather_at(c["lat"], c["lng"], weather)
     if in_singapore(lat, lng):
         km = sg_data.distance_km(lat, lng, c["lat"], c["lng"])
@@ -291,12 +295,55 @@ def ask_claude(system: str, content, schema: dict, effort: str = "low") -> dict:
 @app.get("/api/centres")
 def centres(lat: float | None = None, lng: float | None = None):
     weather = sg_data.get_weather()
-    out = [public_centre(c, lat, lng, weather) for c in sg_data.get_centres()]
+    scores = ratings.summary()
+    out = [public_centre(c, lat, lng, weather, scores) for c in sg_data.get_centres()]
     if in_singapore(lat, lng):
         out.sort(key=lambda c: c["distance_km"])
     return {"centres": out,
             "weather_period": (weather or {}).get("valid_text"),
             "today": sg_data.now_sg().strftime("%a %d %b %Y")}
+
+
+RATE_PER_VISITOR_DAILY = 60
+_rate_usage = {"day": None, "visitors": defaultdict(int)}
+
+
+class RateRequest(BaseModel):
+    centre_id: str
+    voter: str
+    stars: int | None = None
+    price: int | None = None
+
+
+@app.post("/api/rate")
+def rate(req: RateRequest, request: Request):
+    if not any(c["id"] == req.centre_id for c in sg_data.get_centres()):
+        raise HTTPException(404, "Unknown hawker centre.")
+    if not (8 <= len(req.voter) <= 64) or not all(ch.isalnum() or ch == "-" for ch in req.voter):
+        raise HTTPException(400, "Invalid visitor ID.")
+    if req.stars is None and req.price is None:
+        raise HTTPException(400, "Pick a star rating or a price.")
+    if req.stars is not None and not 1 <= req.stars <= 5:
+        raise HTTPException(400, "Stars must be 1 to 5.")
+    if req.price is not None and not 1 <= req.price <= 3:
+        raise HTTPException(400, "Price must be 1 to 3.")
+
+    today = sg_data.now_sg().date().isoformat()
+    who = _visitor(request)
+    with _usage_lock:
+        if _rate_usage["day"] != today:
+            _rate_usage.update(day=today, visitors=defaultdict(int))
+        if _rate_usage["visitors"][who] >= RATE_PER_VISITOR_DAILY:
+            raise HTTPException(429, "That's a lot of ratings for one day! Try again tomorrow.")
+        _rate_usage["visitors"][who] += 1
+
+    try:
+        ratings.submit(req.centre_id, req.voter, req.stars, req.price)
+    except ratings.RatingsError as e:
+        raise HTTPException(503, str(e))
+    s = ratings.summary().get(req.centre_id, {})
+    return {"rating": s.get("rating"), "rating_count": s.get("count", 0),
+            "price": s.get("price"), "price_label": s.get("price_label")}
 
 
 @app.get("/api/locate")
@@ -334,6 +381,13 @@ def recommend(req: FoodRequest, request: Request):
                        if any(x in f.lower() for x in sg_data.RAIN_WORDS))
         lines.append(f"Rain expected now ({weather.get('valid_text') or 'next 2 hours'}) in: "
                      f"{', '.join(rainy) or 'nowhere - dry island-wide'}.")
+    scores = ratings.summary()
+    rated = sorted(((cid, s) for cid, s in scores.items() if s.get("count")),
+                   key=lambda kv: -kv[1]["count"])[:40]
+    if rated:
+        lines.append("HawkerFit user ratings (prefer well-rated centres when it fits): " + "; ".join(
+            f'{cid} {s["rating"]} stars ({s["count"]} votes)'
+            + (f', typical meal {s["price_label"]}' if s.get("price_label") else "") for cid, s in rated))
     has_loc = in_singapore(req.lat, req.lng)
     if has_loc:
         near = sorted(all_centres, key=lambda c: sg_data.distance_km(req.lat, req.lng, c["lat"], c["lng"]))[:12]
@@ -353,7 +407,7 @@ def recommend(req: FoodRequest, request: Request):
         c = by_id.get(p.get("centre_id"))
         if not c:
             continue  # ignore anything not in our list
-        picks.append({**p, "centre": public_centre(c, req.lat, req.lng, weather)})
+        picks.append({**p, "centre": public_centre(c, req.lat, req.lng, weather, scores)})
     result["picks"] = picks
     return result
 
@@ -396,6 +450,11 @@ def about():
 @app.get("/creator")
 def creator():
     return FileResponse(BASE / "static" / "creator.html")
+
+
+@app.get("/sponsor")
+def sponsor():
+    return FileResponse(BASE / "static" / "sponsor.html")
 
 
 @app.get("/static/page.css")
