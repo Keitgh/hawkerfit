@@ -441,6 +441,23 @@
   .nav button[aria-current="page"] svg { stroke-width: 2.2; }
   .toast { background: var(--cta); color: var(--on-cta); border-radius: 14px; font-weight: 500; }
   .foot { padding: 28px 28px 0; line-height: 1.7; }
+  /* time-of-day suggestion */
+  .now-card { display: flex; align-items: center; gap: 12px; width: calc(100% - 40px); margin: 12px 20px 0; padding: 14px;
+              border-radius: 18px; background: var(--cta); color: var(--on-cta); text-align: left; }
+  .now-ic { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; flex-shrink: 0;
+            background: color-mix(in srgb, var(--on-cta) 14%, transparent); }
+  .now-ic svg { width: 22px; height: 22px; }
+  .now-text { flex: 1; min-width: 0; }
+  .now-text small { display: block; font-size: 11px; font-weight: 600; opacity: .65; text-transform: uppercase; letter-spacing: .04em; }
+  .now-text b { display: block; font-size: 16px; line-height: 1.25; letter-spacing: -.02em; margin: 2px 0; }
+  .now-text span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+                   font-size: 12px; line-height: 1.35; opacity: .7; }
+  .now-go { flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 10px;
+            background: var(--on-cta); color: var(--cta); }
+  .cat.now { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .cat.now .ic { color: inherit !important; }
+  @media (min-width: 900px) { .now-card { margin: 14px 0 0; width: 100%; max-width: 720px; } }
+
   /* logo is a link home */
   a.logo { color: var(--ink); text-decoration: none; }
 
@@ -599,6 +616,13 @@
         <button class="gps-btn" id="locInlineGps" type="button"><svg><use href="#i-gps"/></svg>Use my current location</button>
       </section>
 
+      <!-- changes with the time of day: breakfast / lunch & tea break / dinner / supper -->
+      <button class="now-card" id="nowCard" type="button">
+        <span class="now-ic"><svg id="nowIcon"><use href="#i-sun"/></svg></span>
+        <span class="now-text"><small id="nowEyebrow">Right now</small><b id="nowTitle">Breakfast spots</b><span id="nowSub"></span></span>
+        <span class="now-go">See picks</span>
+      </button>
+
       <div class="quick-row">
         <button class="spin-card" id="spinOpen">
           <span class="mini"></span>
@@ -705,9 +729,49 @@ $("#themeBtn").addEventListener("click", () => {
   theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; store.set("hf-theme", theme); applyTheme(theme); toast(`Theme: ${theme}`);
 });
 
-// ---------- greeting ----------
-const hr = new Date().getHours();
-$("#greet").textContent = hr < 5 ? "Still awake" : hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+// ---------- time of day: greeting + what meal to suggest ----------
+//   5:00-11:59 breakfast · 12:00-17:59 lunch & tea break · 18:00-21:59 dinner · 22:00-4:59 supper
+const MEALS = {
+  breakfast: { icon: "sun", eyebrow: "Breakfast time", title: "Breakfast spots",
+               sub: "Kaya toast, chwee kueh, fishball noodles and kopi",
+               query: "Breakfast spots right now: classic local breakfast like kaya toast, chwee kueh, mee pok, porridge and kopi" },
+  lunch:     { icon: "bowl", eyebrow: "Lunch or tea break", title: "Lunch & tea break",
+               sub: "A hearty lunch, or kueh, dessert and teh for a break",
+               query: "A mix of lunch and afternoon tea break spots right now: some hearty lunch dishes, plus snacks like kueh, desserts, rojak and teh or kopi" },
+  dinner:    { icon: "bowl", eyebrow: "Dinner time", title: "Dinner spots",
+               sub: "Satisfying dinners, from zi char to satay",
+               query: "Dinner spots right now: satisfying hawker dinners, like zi char, satay, BBQ seafood and noodles" },
+  supper:    { icon: "moon", eyebrow: "Supper time", title: "Supper spots",
+               sub: "Places that stay open late",
+               query: "Supper spots right now that are open late at night" },
+};
+function mealPeriod(h = new Date().getHours()) {
+  return h >= 5 && h < 12 ? "breakfast" : h >= 12 && h < 18 ? "lunch" : h >= 18 && h < 22 ? "dinner" : "supper";
+}
+function greetingFor(h = new Date().getHours()) {
+  return h >= 5 && h < 12 ? "Good morning" : h >= 12 && h < 18 ? "Good afternoon" : h >= 18 && h < 22 ? "Good evening"
+       : h >= 22 ? "Good night" : "Still awake";
+}
+function renderTimeOfDay() {
+  const m = MEALS[mealPeriod()];
+  $("#greet").textContent = greetingFor();
+  $("#nowEyebrow").textContent = m.eyebrow;
+  $("#nowTitle").textContent = loc ? `${m.title} near ${loc.label === "Near you" ? "you" : loc.label}` : m.title;
+  $("#nowSub").textContent = m.sub;
+  $("#nowIcon").innerHTML = `<use href="#i-${m.icon}"/>`;
+}
+$("#nowCard").addEventListener("click", () => {
+  const m = MEALS[mealPeriod()];
+  search(loc ? m.query + ", near me" : m.query + ", anywhere in Singapore", $("#nowTitle").textContent);
+});
+// keep it right if the app stays open across a meal change
+let _lastMeal = mealPeriod();
+function refreshTimeOfDay() {
+  renderTimeOfDay();
+  if (mealPeriod() !== _lastMeal) { _lastMeal = mealPeriod(); renderCats(); if (!spinning) spinMode = defaultSpinMode(); }
+}
+setInterval(refreshTimeOfDay, 60 * 1000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshTimeOfDay(); });
 
 // ---------- views + routes (the address bar remembers where you are, so reloading keeps it) ----------
 //   #scan            -> Scan tab
@@ -744,7 +808,7 @@ function applyRoute() {
   showView("home");
   const saved = session.get("hf-results");
   if ((r === "results" || r.startsWith("centre=")) && saved && !$("#results").innerHTML) {
-    $("#query").value = saved.query; $("#discover").classList.add("hidden"); renderFood(saved.data, saved.title);
+    $("#query").value = saved.title || saved.query; $("#discover").classList.add("hidden"); renderFood(saved.data, saved.title);
   } else if (!r) { resetHome(); }
   if (r.startsWith("centre=")) {
     const c = byId[r.slice(7)] || (saved?.data?.picks || []).map(p => p.centre).find(x => x.id === r.slice(7));
@@ -789,6 +853,7 @@ function updateLocUI() {
   $("#locBtn").classList.toggle("set", !!loc);
   $("#locCard").classList.toggle("hidden", !!loc);
   $("#listSection").classList.toggle("hidden", !loc);
+  renderTimeOfDay();
 }
 async function findPlace(q) {
   if (!q) return false;
@@ -1028,7 +1093,9 @@ function renderRateBox(c, el) {
 // ---------- spin the wheel ----------
 const WHEEL_COLORS = ["#18181b", "#f1f0ec", "#4f46e5", "#e4e2dc", "#3f3f46", "#ffffff", "#6d68e8", "#d6d3cc"];
 const WHEEL_LIGHT = ["#f1f0ec", "#e4e2dc", "#ffffff", "#d6d3cc"];
-let wheelRot = 0, wheelPool = [], spinning = false, spinMode = "near";
+// late at night the wheel starts on "Supper" so it only spins places that stay open late
+function defaultSpinMode() { return mealPeriod() === "supper" ? "supper" : "near"; }
+let wheelRot = 0, wheelPool = [], spinning = false, spinMode = defaultSpinMode();
 function buildPool() {
   const open = centres.filter(c => !c.closed_today && passesFilters(c));
   let pool;
@@ -1112,19 +1179,30 @@ function showWinner(s, c) {
 $("#spinOpen").addEventListener("click", openSpin);
 
 // ---------- categories ----------
-const CATS = [
-  ["Supper", "moon", "#eef2ff", "#4f46e5", "Good supper spots open late"],
-  ["Halal", "badge", "#ecfdf5", "#059669", "Halal food options"],
-  ["High protein", "dumbbell", "#f7fee7", "#4d7c0f", "High-protein, gym-friendly hawker meals"],
-  ["Under $5", "wallet", "#fff7ed", "#ea580c", "Filling meals under $5"],
-  ["Breakfast", "sun", "#fefce8", "#ca8a04", "Classic local breakfast"],
-  ["Must-try", "star", "#fdf2f8", "#db2777", "Must-try dishes for a first-timer"],
-  ["Vegetarian", "leaf", "#f0fdf4", "#16a34a", "Vegetarian-friendly hawker food"],
-  ["Family", "store", "#f5f5f4", "#57534e", "Family-friendly hawker centre with lots of choice for everyone"],
+// [label, icon, bg, fg, AI query, meal period it belongs to (if any)]
+const CATS_ALL = [
+  ["Breakfast", "sun", "", "", "Classic local breakfast spots", "breakfast"],
+  ["Lunch", "bowl", "", "", "Good hawker lunch spots", "lunch"],
+  ["Tea break", "coffee", "", "", "Afternoon tea break: kueh, desserts, rojak and teh or kopi", "lunch"],
+  ["Dinner", "bowl", "", "", "Good hawker dinner spots", "dinner"],
+  ["Supper", "moon", "", "", "Good supper spots open late", "supper"],
+  ["Halal", "badge", "", "", "Halal food options"],
+  ["High protein", "dumbbell", "", "", "High-protein, gym-friendly hawker meals"],
+  ["Under $5", "wallet", "", "", "Filling meals under $5"],
+  ["Must-try", "star", "", "", "Must-try dishes for a first-timer"],
+  ["Vegetarian", "leaf", "", "", "Vegetarian-friendly hawker food"],
+  ["Family", "store", "", "", "Family-friendly hawker centre with lots of choice for everyone"],
 ];
-$("#cats").innerHTML = CATS.map(([label, ic, bg, fg], i) =>
-  `<button class="cat" data-i="${i}"><span class="ic" style="background:${bg};color:${fg}">${icon(ic)}</span>${label}</button>`).join("");
-document.querySelectorAll(".cat").forEach(c => c.addEventListener("click", () => { const k = CATS[c.dataset.i]; search(k[4], k[0]); }));
+// The pills for the current meal come first; other meals' pills go to the end.
+let CATS = [];
+function renderCats() {
+  const now = mealPeriod();
+  CATS = [...CATS_ALL.filter(c => c[5] === now), ...CATS_ALL.filter(c => !c[5]), ...CATS_ALL.filter(c => c[5] && c[5] !== now)];
+  $("#cats").innerHTML = CATS.map(([label, ic, , , , meal], i) =>
+    `<button class="cat${meal === now ? " now" : ""}" data-i="${i}"><span class="ic">${icon(ic)}</span>${label}</button>`).join("");
+  document.querySelectorAll(".cat").forEach(c => c.addEventListener("click", () => { const k = CATS[c.dataset.i]; search(k[4], k[0]); }));
+}
+renderCats(); renderTimeOfDay();
 
 // ---------- AI search ----------
 $("#searchForm").addEventListener("submit", e => { e.preventDefault(); const q = $("#query").value.trim(); if (q) search(q); });
@@ -1136,7 +1214,7 @@ function skeleton(n = 3) {
 let busy = false;
 async function search(query, title) {
   if (busy) return; busy = true;
-  $("#query").value = query; $("#discover").classList.add("hidden");
+  $("#query").value = title || query; $("#discover").classList.add("hidden");
   $("#results").innerHTML = `<div class="res-head"><h2>${esc(title || "Results")}</h2></div>${skeleton()}`;
   window.scrollTo({ top: 0, behavior: "smooth" });
   try {

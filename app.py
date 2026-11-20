@@ -282,7 +282,11 @@ def ask_claude(system: str, content, schema: dict, effort: str = "low") -> dict:
     except anthropic.RateLimitError:
         raise HTTPException(429, "Too many requests right now - wait a moment and try again.")
     except anthropic.BadRequestError as e:
-        raise HTTPException(400, f"Request problem: {e.message}")
+        if "credit balance" in str(e.message).lower():
+            # Out of API credit: say so kindly instead of showing the raw API error to visitors.
+            raise HTTPException(503, "HawkerFit's AI is taking a short break right now. Browsing hawker centres, "
+                                     "ratings and the spin wheel still work. Please try the AI again later!")
+        raise HTTPException(400, "Sorry, that request didn't work. Try rephrasing it.")
     except anthropic.APIStatusError as e:
         raise HTTPException(502, f"Claude API error ({e.status_code}). Try again shortly.")
     except anthropic.APIConnectionError:
@@ -391,7 +395,13 @@ def recommend(req: FoodRequest, request: Request):
     now = sg_data.now_sg()
 
     closed = [c["id"] for c in all_centres if sg_data.closure_status(c, now.date())["closed_today"]]
-    lines = [f"Today is {now.strftime('%A %d %B %Y, %I:%M %p')} in Singapore.",
+    h = now.hour
+    meal = ("breakfast" if 5 <= h < 12 else "lunch or an afternoon tea break" if 12 <= h < 18
+            else "dinner" if 18 <= h < 22 else "supper (late night)")
+    lines = [f"Today is {now.strftime('%A %d %B %Y, %I:%M %p')} in Singapore. It's {meal} time: unless the request "
+             "says otherwise, suggest dishes that suit this meal"
+             + (", and only centres marked good_for_supper or likely to have late-night stalls" if meal.startswith("supper") else "")
+             + ".",
              f"Closed today (do not pick): {', '.join(closed) or 'none'}."]
     if weather and weather["forecasts"]:
         rainy = sorted(a for a, f in weather["forecasts"].items()
