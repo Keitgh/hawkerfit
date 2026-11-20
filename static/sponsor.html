@@ -7,18 +7,18 @@
 <meta name="description" content="Sponsorship for HawkerFit is a work in progress. Get in touch if you'd like to support the project.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/page.css">
 <script>try { const t = localStorage.getItem("hf-theme"); if (t && t !== "system") document.documentElement.setAttribute("data-theme", t); } catch {}</script>
 <style>
   .wip { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; padding: 6px 12px; border-radius: 999px;
-         background: #fef3c7; color: #92400e; font-size: 12px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
-  :root[data-theme="dark"] .wip { background: #3a2a0c; color: #fcd34d; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wip { background: #3a2a0c; color: #fcd34d; } }
-  .wip i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.6s infinite; }
+         background: var(--surface-2); color: var(--ink); font-size: 12px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
+  :root[data-theme="dark"] .wip { background: var(--surface-2); color: var(--ink); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wip { background: var(--surface-2); color: var(--ink); } }
+  .wip i { width: 8px; height: 8px; border-radius: 50%; background: #e0a10b; animation: pulse 1.6s infinite; }
   @keyframes pulse { 50% { opacity: .3; } }
   .wip + h1 { margin-top: 14px; }
-  .soon { opacity: .75; }
+  .soon { opacity: .85; }
   .soon b::after { content: "Coming soon"; margin-left: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase;
                    letter-spacing: .3px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; }
 </style>

@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f6f7fb">
+<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f11" media="(prefers-color-scheme: dark)">
 <title>HawkerFit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: light;
@@ -286,6 +287,161 @@
            padding: 12px 16px; border-radius: 12px; font-size: 13px; max-width: calc(100% - 32px); width: max-content; opacity: 0;
            pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50; }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* =====================================================================
+     Refined look: calm neutrals, one accent, flat cards, one typeface.
+     Layered on top of the rules above so behaviour stays the same.
+     ===================================================================== */
+  :root {
+    --brand: #4f46e5; --brand-dark: #3f37c9; --brand-tint: #efeefc; --on-brand: #fff;
+    --ink: #18181b; --ink-2: #52525b; --muted: #8e8e96; --line: #e8e7e3;
+    --bg: #f8f7f4; --surface: #ffffff; --surface-2: #f1f0ec;
+    --cta: #18181b; --on-cta: #ffffff;
+    --warn: #b45309; --warn-tint: #fdf3e2; --rain: #0369a1; --rain-tint: #e8f3fb;
+    --closed: #b91c1c; --closed-tint: #fcebeb;
+    --star: #e0a10b; --good: #15803d;
+    --shadow: 0 1px 2px rgba(24,24,27,.04);
+    --radius: 18px;
+    --display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  :root[data-theme="dark"] {
+    --brand: #a5a1ff; --brand-dark: #c4c1ff; --brand-tint: #25243a; --on-brand: #121214;
+    --ink: #f4f4f2; --ink-2: #b8b8bf; --muted: #7c7c85; --line: #2a2a2f;
+    --bg: #0f0f11; --surface: #18181b; --surface-2: #222226;
+    --cta: #f4f4f2; --on-cta: #121214;
+    --warn: #f5b25c; --warn-tint: #2e2414; --rain: #7cc4ef; --rain-tint: #13232e;
+    --closed: #f39b9b; --closed-tint: #2e1719; --star: #f5c04a; --good: #6fd29a;
+    --shadow: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]):not([data-theme="dark"]) {
+      --brand: #a5a1ff; --brand-dark: #c4c1ff; --brand-tint: #25243a; --on-brand: #121214;
+      --ink: #f4f4f2; --ink-2: #b8b8bf; --muted: #7c7c85; --line: #2a2a2f;
+      --bg: #0f0f11; --surface: #18181b; --surface-2: #222226;
+      --cta: #f4f4f2; --on-cta: #121214;
+      --warn: #f5b25c; --warn-tint: #2e2414; --rain: #7cc4ef; --rain-tint: #13232e;
+      --closed: #f39b9b; --closed-tint: #2e1719; --star: #f5c04a; --good: #6fd29a;
+      --shadow: none;
+    }
+  }
+  body { letter-spacing: -.006em; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { letter-spacing: -.025em; }
+
+  /* header */
+  .hero { padding: 18px 20px 4px; }
+  .logo { font-family: var(--display); font-size: 18px; font-weight: 800; letter-spacing: -.035em; gap: 9px; }
+  .logo .mark { width: 30px; height: 30px; border-radius: 9px; transform: none; background: var(--ink); color: var(--bg); }
+  :root[data-theme="dark"] .logo .mark { color: var(--bg); }
+  .logo .mark svg { width: 18px; height: 18px; }
+  .logo em { color: var(--brand); }
+  .chip-btn, .icon-btn { background: var(--surface-2); border-color: transparent; color: var(--ink); }
+  .chip-btn svg { color: var(--ink-2); }
+  .hero h1 { margin-top: 28px; font-size: 32px; line-height: 1.08; font-weight: 800; letter-spacing: -.04em; }
+  .hero h1 span { color: var(--muted); }
+  .weather { margin-top: 12px; color: var(--muted); }
+  .weather svg { color: var(--muted); }
+
+  .search { margin: 18px 20px 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+            box-shadow: 0 1px 2px rgba(24,24,27,.03), 0 6px 20px rgba(24,24,27,.04); }
+  :root[data-theme="dark"] .search { box-shadow: none; }
+  .search:focus-within { border-color: var(--ink); }
+  .go, .wide.primary { background: var(--cta); color: var(--on-cta); }
+  .go { border-radius: 11px; font-weight: 700; }
+
+  /* spin promo: quiet card instead of a gradient banner */
+  .spin-card { margin: 12px 20px 0; width: calc(100% - 40px); background: var(--surface); color: var(--ink);
+               border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; }
+  .spin-card .mini { width: 38px; height: 38px; border: 2px solid var(--ink); position: relative;
+                     background: repeating-conic-gradient(var(--ink) 0 30deg, var(--surface) 30deg 60deg); }
+  .spin-card .mini::after { content: ""; position: absolute; inset: 0; margin: auto; width: 10px; height: 10px;
+                            border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 2px var(--surface); }
+  .spin-card b { font-size: 14px; }
+  .spin-card small { color: var(--muted); opacity: 1; }
+
+  /* categories: one tidy row of pills */
+  section.block { margin-top: 26px; }
+  .sec-head { padding: 0 20px; }
+  .sec-head h2 { font-family: var(--display); font-size: 17px; font-weight: 800; letter-spacing: -.03em; white-space: nowrap; }
+  .sec-head span { text-align: right; }
+  .cats { display: flex; gap: 8px; padding: 0 20px 2px; overflow-x: auto; scrollbar-width: none; }
+  .cats::-webkit-scrollbar { display: none; }
+  .cat { flex-shrink: 0; border-radius: 999px; padding: 8px 14px 8px 10px; font-weight: 600; gap: 7px; background: var(--surface); }
+  .cat .ic { width: 20px; height: 20px; background: transparent !important; color: var(--ink-2) !important; }
+  .cat .ic svg { width: 17px; height: 17px; }
+
+  /* filters */
+  .filters { padding: 0 20px 14px; }
+  .fsel { font-weight: 600; background-color: var(--surface); }
+  .fsel.on { background-color: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .fclear { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* cards */
+  .centres { padding: 0 20px; gap: 10px; }
+  .hc, .item, .dish, .total, .rate-box, .tp-card, .fact, .dirs a, .social-row a, .field, .upload {
+    box-shadow: none; border: 1px solid var(--line); }
+  .hc { border-radius: var(--radius); padding: 10px; transition: border-color .15s; }
+  .hc:hover { border-color: #d4d2cc; }
+  :root[data-theme="dark"] .hc:hover { border-color: #3a3a40; }
+  .photo { border-radius: 12px; width: 84px; height: 84px; }
+  .hc h3, .item h3, .dish h3 { font-weight: 700; letter-spacing: -.02em; }
+  .metas { color: var(--ink-2); font-weight: 500; }
+  .metas svg { color: var(--muted); }
+  .stars-meta { color: var(--ink) !important; font-weight: 700; }
+  .stars-meta .st { color: var(--star); font-weight: 400; }
+  .price-meta { color: var(--ink-2) !important; font-weight: 700; }
+
+  /* badges: quiet text labels with a coloured dot, not filled blobs */
+  .badge { background: transparent !important; padding: 0; font-weight: 600; gap: 5px; }
+  .badge svg { display: none; }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .b-late { color: var(--muted) !important; }
+  .badges { gap: 4px 12px; }
+
+  .pill { background: var(--surface-2); color: var(--ink-2); font-weight: 600; }
+  .pill.hot { background: var(--warn-tint); color: var(--warn); }
+  .note { background: var(--surface-2); color: var(--ink-2); border: 0; }
+  .link { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+  .btn-o { color: var(--ink); background: var(--surface); }
+  #results, .pad { padding-left: 20px; padding-right: 20px; }
+  .res-head h2, .page-title h1, .sheet h2, .tp-head h3, .rate-box h3 { font-family: var(--display); font-weight: 800; letter-spacing: -.03em; }
+  .page-title { padding: 24px 20px 4px; }
+  .page-title h1 { font-size: 26px; }
+  .upload { margin: 16px 20px; border-style: dashed; background: var(--surface); }
+  .upload .big { background: var(--surface-2); color: var(--ink); }
+  .label { margin: 4px 20px 8px; }
+  .seg { background: var(--surface-2); }
+  .seg button[aria-pressed="true"] { color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+
+  /* sheets */
+  .scrim { background: rgba(10,10,12,.4); backdrop-filter: blur(2px); }
+  .sheet { padding: 8px 20px calc(24px + env(safe-area-inset-bottom)); border-radius: 24px 24px 0 0; }
+  .detail-photo { border-radius: 18px; height: 200px; }
+  .dirs a { color: var(--ink); font-weight: 600; }
+  .dirs a svg { color: var(--ink-2); }
+  .social-row a { font-weight: 600; }
+  .star.on, .star.hover { color: var(--star); }
+  .tipline { color: var(--ink-2); }
+  .tipline svg { color: var(--brand); }
+
+  /* gym card stays dark, but softer */
+  .gym { background: #18181b; }
+  :root[data-theme="dark"] .gym { background: var(--surface-2); }
+  .gym li::before { background: #e4e4e7; color: #18181b; }
+  .gym .mt { color: #c7c4ff; }
+
+  /* wheel */
+  .wheel-wrap canvas { box-shadow: 0 0 0 6px var(--surface), 0 0 0 7px var(--line); }
+  .pointer { border-top-color: var(--ink); }
+  .hub { color: var(--ink); font-weight: 800; box-shadow: 0 0 0 1px var(--line); }
+
+  /* bottom nav: frosted glass */
+  .nav { background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: saturate(1.4) blur(14px);
+         -webkit-backdrop-filter: saturate(1.4) blur(14px); border-top-color: var(--line); }
+  .nav button[aria-current="page"] { color: var(--ink); }
+  .nav button[aria-current="page"] svg { stroke-width: 2.2; }
+  .toast { background: var(--cta); color: var(--on-cta); border-radius: 14px; font-weight: 500; }
+  .foot { padding: 28px 28px 0; line-height: 1.7; }
+  .foot a { color: var(--ink-2) !important; font-weight: 600 !important; }
 </style>
 </head>
 <body>
@@ -414,8 +570,8 @@ const icon = (id, size) => `<svg${size ? ` style="width:${size}px;height:${size}
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } },
                 set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} } };
 
-const PALETTE = [["#4338ca", "#818cf8"], ["#c2410c", "#f59e0b"], ["#1e3a8a", "#3b82f6"], ["#6d28d9", "#c084fc"],
-                 ["#334155", "#64748b"], ["#b45309", "#eab308"], ["#0e7490", "#22d3ee"], ["#9d174d", "#f472b6"]];
+const PALETTE = [["#3f3f46", "#71717a"], ["#57534e", "#a8a29e"], ["#4338ca", "#6d68e8"], ["#44403c", "#78716c"],
+                 ["#27272a", "#52525b"], ["#5b5bd6", "#8b87f0"], ["#52525b", "#a1a1aa"], ["#3730a3", "#5b55d6"]];
 const hash = (t) => { let h = 0; for (const ch of String(t)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
 const swatch = (t) => { const [a, b] = PALETTE[hash(t) % PALETTE.length]; return `background:linear-gradient(135deg,${a},${b})`; };
 const initials = (n) => String(n).split(/\s+/).filter(w => /^[A-Za-z]/.test(w)).slice(0, 2).map(w => w[0].toUpperCase()).join("") || "•";
@@ -548,7 +704,7 @@ function travelMeta(c) {
 const PRICE_SIGNS = { 1: "$", 2: "$$", 3: "$$$" };
 function ratingMeta(c) {
   const parts = [];
-  if (c.rating != null) parts.push(`<span class="stars-meta">★ ${c.rating.toFixed(1)}<i>(${c.rating_count})</i></span>`);
+  if (c.rating != null) parts.push(`<span class="stars-meta"><b class="st">★</b>${c.rating.toFixed(1)}<i>(${c.rating_count})</i></span>`);
   if (c.price) parts.push(`<span class="price-meta" title="${esc(c.price_label)} per meal">${PRICE_SIGNS[c.price]}</span>`);
   return parts.join("");
 }
@@ -586,7 +742,7 @@ $("#fClear").addEventListener("click", () => { filters = { radius: 0, rating: 0,
 syncFilterUI();
 
 function renderCentres() {
-  $("#listTitle").textContent = loc ? "Nearest hawker centres" : "Hawker centres";
+  $("#listTitle").textContent = loc ? "Nearest to you" : "Hawker centres";
   let list = centres.filter(passesFilters);
   const filtered = list.length !== centres.length;
   $("#listSub").textContent = filtered ? `${list.length} of ${centres.length} match`
@@ -655,7 +811,7 @@ function myVotes() { try { return JSON.parse(store.get("hf-votes") || "{}"); } c
 function renderRateBox(c, el) {
   const mine = myVotes()[c.id] || {};
   const summary = c.rating != null
-    ? `<div class="rate-avg"><b>★ ${c.rating.toFixed(1)}</b><span>${c.rating_count} rating${c.rating_count === 1 ? "" : "s"}${c.price_label ? ` · typical meal ${esc(c.price_label)}` : ""}</span></div>`
+    ? `<div class="rate-avg"><b><span style="color:var(--star)">★</span> ${c.rating.toFixed(1)}</b><span>${c.rating_count} rating${c.rating_count === 1 ? "" : "s"}${c.price_label ? ` · typical meal ${esc(c.price_label)}` : ""}</span></div>`
     : `<div class="rate-avg"><span>No ratings yet. Be the first!</span></div>`;
   el.innerHTML = `<h3>Rate this hawker centre</h3>${summary}
     <div class="star-row" role="radiogroup" aria-label="Your rating">${[1, 2, 3, 4, 5].map(n =>
@@ -686,7 +842,8 @@ function renderRateBox(c, el) {
 
 
 // ---------- spin the wheel ----------
-const WHEEL_COLORS = ["#4338ca", "#d9f99d", "#6366f1", "#fde68a", "#312e81", "#a5b4fc", "#c2410c", "#fecaca"];
+const WHEEL_COLORS = ["#18181b", "#f1f0ec", "#4f46e5", "#e4e2dc", "#3f3f46", "#ffffff", "#6d68e8", "#d6d3cc"];
+const WHEEL_LIGHT = ["#f1f0ec", "#e4e2dc", "#ffffff", "#d6d3cc"];
 let wheelRot = 0, wheelPool = [], spinning = false, spinMode = "near";
 function buildPool() {
   const open = centres.filter(c => !c.closed_today && passesFilters(c));
@@ -707,7 +864,7 @@ function drawWheel(canvas, pool) {
     const col = WHEEL_COLORS[i % WHEEL_COLORS.length]; g.fillStyle = col; g.fill();
     g.save(); g.translate(r, r); g.rotate(-Math.PI / 2 + (i + .5) * a);
     g.textAlign = "right"; g.textBaseline = "middle";
-    g.fillStyle = ["#d9f99d", "#fde68a", "#a5b4fc", "#fecaca"].includes(col) ? "#1e1b4b" : "#fff";
+    g.fillStyle = WHEEL_LIGHT.includes(col) ? "#18181b" : "#fff";
     g.font = "700 11px 'Plus Jakarta Sans', sans-serif";
     let label = c.name.length > 20 ? c.name.slice(0, 19) + "…" : c.name;
     g.fillText(label, r - 14, 0); g.restore();
