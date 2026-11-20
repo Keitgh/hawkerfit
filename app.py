@@ -386,3 +386,18 @@ def read_menu(request: Request, image: UploadFile = File(...), question: str = F
 @app.get("/")
 def index():
     return FileResponse(BASE / "static" / "index.html")
+
+
+@app.get("/about")
+def about():
+    return FileResponse(BASE / "static" / "about.html")
+
+
+@app.get("/creator")
+def creator():
+    return FileResponse(BASE / "static" / "creator.html")
+
+
+@app.get("/static/page.css")
+def page_css():
+    return FileResponse(BASE / "static" / "page.css", media_type="text/css")
