@@ -1,0 +1,7 @@
+# secrets - never upload
+.env
+
+# local caches / build output
+__pycache__/
+data/cache_*.json
+hawkerfit-upload/

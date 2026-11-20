@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f7fb">
+<title>HawkerFit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --brand: #4338ca; --brand-dark: #3730a3; --brand-tint: #eef0ff; --on-brand: #ffffff; --lime: #d9f99d;
+    --ink: #161a2b; --ink-2: #4a5068; --muted: #8b90a5; --line: #e6e8f0;
+    --bg: #f6f7fb; --surface: #ffffff; --surface-2: #f0f2f7;
+    --warn: #c2410c; --warn-tint: #fdecdf; --rain: #0369a1; --rain-tint: #e0f2fe;
+    --closed: #b91c1c; --closed-tint: #fee2e2;
+    --shadow: 0 1px 2px rgba(16,24,40,.04), 0 4px 16px rgba(16,24,40,.06);
+    --radius: 16px; --nav-h: 68px;
+    --display: "Fraunces", Georgia, serif;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --brand: #8b93ff; --brand-dark: #a5abff; --brand-tint: #23264a; --on-brand: #0f1124;
+    --ink: #eef0f8; --ink-2: #b7bcd0; --muted: #7d8399; --line: #2a2e42;
+    --bg: #0f1120; --surface: #181b2e; --surface-2: #20243a;
+    --warn: #fdba74; --warn-tint: #3a2414; --rain: #7dd3fc; --rain-tint: #0f2a3a;
+    --closed: #fca5a5; --closed-tint: #3a1717;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]):not([data-theme="dark"]) {
+      color-scheme: dark;
+      --brand: #8b93ff; --brand-dark: #a5abff; --brand-tint: #23264a; --on-brand: #0f1124;
+      --ink: #eef0f8; --ink-2: #b7bcd0; --muted: #7d8399; --line: #2a2e42;
+      --bg: #0f1120; --surface: #181b2e; --surface-2: #20243a;
+      --warn: #fdba74; --warn-tint: #3a2414; --rain: #7dd3fc; --rain-tint: #0f2a3a;
+      --closed: #fca5a5; --closed-tint: #3a1717;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink);
+         font: 15px/1.45 "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+  a { color: inherit; }
+  svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8;
+        stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .app { max-width: 520px; margin: 0 auto; min-height: 100vh; padding-bottom: calc(var(--nav-h) + 24px); }
+  @media (min-width: 560px) { .app { box-shadow: 0 0 0 1px var(--line); } }
+  .hidden { display: none !important; }
+
+  /* ---------- header ---------- */
+  .hero { padding: 16px 16px 4px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .logo { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 700; font-size: 20px; }
+  .logo .mark { width: 34px; height: 34px; border-radius: 10px; background: var(--brand); color: var(--lime);
+                display: grid; place-items: center; transform: rotate(-6deg); }
+  :root[data-theme="dark"] .logo .mark { color: #1a1d36; }
+  .logo .mark svg { width: 20px; height: 20px; stroke-width: 2; }
+  .logo em { font-style: normal; color: var(--brand); }
+  .top-actions { display: flex; gap: 6px; align-items: center; }
+  .chip-btn { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; font-size: 12px; color: var(--ink-2);
+              background: var(--surface); border: 1px solid var(--line); padding: 6px 10px; border-radius: 999px;
+              max-width: 170px; }
+  .chip-btn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chip-btn svg { width: 14px; height: 14px; color: var(--brand); }
+  .icon-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface);
+              display: grid; place-items: center; color: var(--ink-2); }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .hero h1 { margin: 20px 0 0; font-family: var(--display); font-size: 30px; line-height: 1.1; font-weight: 700; letter-spacing: -.02em; }
+  .hero h1 span { color: var(--brand); }
+
+  .weather { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+  .weather svg { width: 16px; height: 16px; color: var(--brand); }
+  .weather.rainy svg { color: var(--rain); }
+
+  .search { margin: 14px 16px 0; background: var(--surface); border-radius: 14px; border: 1.5px solid var(--line);
+            display: flex; align-items: center; gap: 10px; padding: 5px 5px 5px 14px; }
+  .search:focus-within { border-color: var(--brand); }
+  .search svg { color: var(--muted); }
+  .search input { flex: 1; border: 0; outline: 0; font: inherit; padding: 10px 0; background: transparent; color: var(--ink); min-width: 0; }
+  .search input::placeholder { color: var(--muted); }
+  .go { background: var(--brand); color: var(--on-brand); font-weight: 700; font-size: 14px; padding: 10px 16px; border-radius: 10px; }
+
+  /* ---------- spin promo ---------- */
+  .spin-card { margin: 14px 16px 0; border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+               background: linear-gradient(120deg, #312e81, #4338ca 55%, #6366f1); color: #fff; text-align: left; width: calc(100% - 32px); }
+  .spin-card .mini { width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+                     background: conic-gradient(#d9f99d 0 45deg, #a5b4fc 45deg 90deg, #fde68a 90deg 135deg, #fca5a5 135deg 180deg,
+                                                #d9f99d 180deg 225deg, #a5b4fc 225deg 270deg, #fde68a 270deg 315deg, #fca5a5 315deg);
+                     border: 3px solid rgba(255,255,255,.85); }
+  .spin-card b { display: block; font-size: 15px; }
+  .spin-card small { opacity: .8; font-size: 12px; }
+
+  /* ---------- sections ---------- */
+  section.block { margin-top: 24px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 16px; margin-bottom: 12px; gap: 8px; }
+  .sec-head h2 { margin: 0; font-size: 18px; font-family: var(--display); font-weight: 700; }
+  .sec-head span { color: var(--muted); font-size: 12px; }
+  .cats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0 16px; }
+  .cat { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; background: var(--surface);
+         border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; text-align: left; }
+  .cat .ic { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; flex-shrink: 0; }
+  .cat .ic svg { width: 18px; height: 18px; }
+  .cat:active { transform: scale(.97); }
+
+  /* centre list */
+  .centres { padding: 0 16px; display: grid; gap: 10px; }
+  .hc { display: flex; gap: 12px; background: var(--surface); border-radius: var(--radius); padding: 10px; box-shadow: var(--shadow);
+        text-align: left; width: 100%; }
+  .photo { width: 92px; height: 92px; border-radius: 12px; flex-shrink: 0; background: var(--surface-2); object-fit: cover;
+           display: grid; place-items: center; color: rgba(255,255,255,.9); font-weight: 800; font-size: 24px; overflow: hidden; }
+  .hc .info { flex: 1; min-width: 0; }
+  .hc h3 { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.3; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .metas { display: flex; flex-wrap: wrap; gap: 3px 10px; margin-top: 6px; color: var(--ink-2); font-size: 12px; font-weight: 600; }
+  .metas span { display: inline-flex; align-items: center; gap: 4px; }
+  .metas svg { width: 13px; height: 13px; color: var(--muted); }
+  .badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+  .badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; display: inline-flex; gap: 4px; align-items: center; }
+  .badge svg { width: 12px; height: 12px; }
+  .b-closed { background: var(--closed-tint); color: var(--closed); }
+  .b-soon { background: var(--warn-tint); color: var(--warn); }
+  .b-rain { background: var(--rain-tint); color: var(--rain); }
+  .b-late { background: var(--brand-tint); color: var(--brand-dark); }
+  .more { display: block; margin: 12px auto 0; font-weight: 700; color: var(--brand); font-size: 13px; padding: 8px 14px; }
+
+  /* results */
+  #results { padding: 0 16px; }
+  .res-head { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 4px; }
+  .res-head h2 { margin: 0; font-size: 18px; font-family: var(--display); font-weight: 700; }
+  .link { color: var(--brand); font-weight: 700; font-size: 13px; }
+  .lead { color: var(--ink-2); margin: 0 0 14px; font-size: 14px; }
+  .item { background: var(--surface); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .item .row { display: flex; gap: 12px; }
+  .item h3 { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.3; }
+  .price { font-weight: 800; color: var(--ink); }
+  .why { color: var(--ink-2); font-size: 13px; margin: 10px 0 0; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .pill { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: var(--brand-tint); color: var(--brand-dark); }
+  .pill.grey { background: var(--surface-2); color: var(--ink-2); }
+  .pill.hot { background: var(--warn-tint); color: var(--warn); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .btn-o { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px;
+           padding: 6px 12px; font-size: 12px; font-weight: 700; color: var(--brand); text-decoration: none; background: var(--surface); }
+  .btn-o svg { width: 14px; height: 14px; }
+  .note { display: flex; gap: 10px; align-items: flex-start; background: var(--brand-tint); color: var(--brand-dark);
+          border-radius: 12px; padding: 12px 14px; font-size: 13px; font-weight: 500; margin-bottom: 12px; }
+  .sk { background: linear-gradient(90deg, var(--surface-2) 25%, var(--bg) 50%, var(--surface-2) 75%); background-size: 200% 100%;
+        animation: sh 1.2s infinite linear; border-radius: 8px; }
+  @keyframes sh { to { background-position: -200% 0; } }
+
+  /* ---------- sheets ---------- */
+  .scrim { position: fixed; inset: 0; background: rgba(10,12,24,.45); z-index: 30; display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { background: var(--bg); width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; border-radius: 22px 22px 0 0;
+           padding: 8px 16px calc(24px + env(safe-area-inset-bottom)); animation: up .22s ease-out; }
+  @keyframes up { from { transform: translateY(40px); opacity: .5; } }
+  .grab { width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 4px auto 12px; }
+  .sheet h2 { margin: 0 0 4px; font-family: var(--display); font-size: 22px; }
+  .sheet .sub2 { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .field { background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px; display: flex; gap: 8px; padding: 4px 4px 4px 12px; align-items: center; }
+  .field:focus-within { border-color: var(--brand); }
+  .field input { flex: 1; border: 0; outline: 0; background: transparent; font: inherit; padding: 10px 0; color: var(--ink); min-width: 0; }
+  .wide { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; border-radius: 12px;
+          font-weight: 700; margin-top: 10px; }
+  .wide.primary { background: var(--brand); color: var(--on-brand); }
+  .wide.ghost { background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
+  .wide:disabled { opacity: .55; }
+  .detail-photo { width: 100%; height: 190px; object-fit: cover; border-radius: 16px; background: var(--surface-2); display: block; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+  .fact { background: var(--surface); border-radius: 12px; padding: 10px; text-align: center; }
+  .fact b { display: block; font-size: 16px; }
+  .fact small { color: var(--muted); font-size: 11px; font-weight: 600; }
+  .dirs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .dirs a { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dirs a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px; border-radius: 12px; background: var(--surface);
+            border: 1px solid var(--line); font-size: 12px; font-weight: 700; text-decoration: none; color: var(--brand); }
+  .text { color: var(--ink-2); font-size: 13px; }
+
+  /* wheel */
+  .wheel-wrap { position: relative; width: 300px; height: 300px; margin: 8px auto 4px; }
+  .wheel-wrap canvas { width: 300px; height: 300px; border-radius: 50%; box-shadow: var(--shadow);
+                       transition: transform 4.2s cubic-bezier(.17,.67,.12,1); }
+  .pointer { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); width: 0; height: 0;
+             border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid var(--ink); z-index: 2; }
+  .hub { position: absolute; inset: 0; margin: auto; width: 64px; height: 64px; border-radius: 50%; background: var(--surface);
+         box-shadow: var(--shadow); display: grid; place-items: center; font-weight: 800; font-size: 13px; color: var(--brand); z-index: 2; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface-2); border-radius: 12px; padding: 4px; gap: 4px; margin: 0 0 12px; }
+  .seg button { padding: 8px 4px; border-radius: 9px; font-size: 12px; font-weight: 700; color: var(--ink-2); }
+  .seg button small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--brand-dark); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .winner { margin-top: 14px; }
+
+  /* ---------- scan ---------- */
+  .page-title { padding: 20px 16px 4px; }
+  .page-title h1 { margin: 0; font-size: 24px; font-family: var(--display); font-weight: 700; }
+  .page-title p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+  .upload { margin: 16px; background: var(--surface); border: 1.5px dashed var(--line); border-radius: 20px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 8px; min-height: 210px; cursor: pointer; text-align: center; padding: 20px;
+            overflow: hidden; position: relative; }
+  .upload input { display: none; }
+  .upload .big { width: 64px; height: 64px; border-radius: 20px; background: var(--brand-tint); color: var(--brand); display: grid; place-items: center; }
+  .upload .big svg { width: 30px; height: 30px; }
+  .upload small { color: var(--muted); font-size: 13px; }
+  .upload img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .upload .change { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; font-weight: 600;
+                    padding: 6px 10px; border-radius: 999px; z-index: 1; }
+  .label { margin: 4px 16px 8px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+  .pad { padding: 0 16px; }
+  .dish { background: var(--surface); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); margin-bottom: 10px; }
+  .dish .top { display: flex; justify-content: space-between; gap: 12px; }
+  .dish h3 { margin: 0; font-size: 15px; font-weight: 700; }
+  .dish .orig { color: var(--muted); font-size: 13px; }
+  .dish p { margin: 6px 0 0; color: var(--ink-2); font-size: 13px; }
+  .nut { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .kcal { display: flex; align-items: baseline; justify-content: space-between; }
+  .kcal b { font-size: 22px; font-weight: 800; }
+  .kcal b small { font-size: 13px; font-weight: 600; color: var(--muted); margin-left: 3px; }
+  .kcal span { font-size: 12px; color: var(--muted); }
+  .macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .macro .k { font-size: 11px; font-weight: 600; color: var(--muted); }
+  .macro .v { font-size: 15px; font-weight: 800; }
+  .macro .bar { height: 6px; border-radius: 3px; background: var(--surface-2); margin-top: 4px; overflow: hidden; }
+  .macro .bar i { display: block; height: 100%; border-radius: 3px; }
+  .minor { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .minor span { font-size: 12px; font-weight: 600; background: var(--surface-2); color: var(--ink-2); padding: 4px 8px; border-radius: 6px; }
+  .minor span.warn { background: var(--warn-tint); color: var(--warn); }
+  .tipline { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 13px; font-weight: 500; color: var(--brand-dark); }
+  .tipline svg { width: 16px; height: 16px; margin-top: 2px; }
+  .gym { background: #111827; color: #fff; border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .gym h3 { margin: 0 0 2px; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .gym .goal { color: #9ca3af; font-size: 12px; }
+  .gym ol { margin: 12px 0 0; padding: 0; list-style: none; counter-reset: g; }
+  .gym li { counter-increment: g; display: flex; gap: 10px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.08); font-size: 13px; color: #d1d5db; }
+  .gym li::before { content: counter(g); flex: 0 0 22px; height: 22px; border-radius: 50%; background: #d9f99d; color: #1a2e05;
+                    font-weight: 800; font-size: 12px; display: grid; place-items: center; }
+  .gym li b { color: #fff; display: block; font-size: 14px; }
+  .gym .mt { margin-top: 10px; font-size: 12px; color: #d9f99d; }
+  .total { background: var(--surface); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .total h3 { margin: 0; font-size: 14px; font-weight: 800; }
+  .disclaim, .foot { color: var(--muted); font-size: 11px; text-align: center; }
+  .foot { padding: 20px 24px 0; }
+
+  /* nav + toast */
+  .nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px;
+         height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+         background: var(--surface); border-top: 1px solid var(--line); display: flex; z-index: 10; }
+  .nav button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .nav button svg { width: 24px; height: 24px; }
+  .nav button[aria-current="page"] { color: var(--brand); }
+  .toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 16px); transform: translate(-50%, 20px); background: #1f2328; color: #fff;
+           padding: 12px 16px; border-radius: 12px; font-size: 13px; max-width: calc(100% - 32px); width: max-content; opacity: 0;
+           pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-badge" viewBox="0 0 24 24"><path d="M12 3l2.4 1.8 3-.2.9 2.9 2.5 1.7-1 2.8 1 2.8-2.5 1.7-.9 2.9-3-.2L12 21l-2.4-1.8-3 .2-.9-2.9-2.5-1.7 1-2.8-1-2.8 2.5-1.7.9-2.9 3 .2z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 20c0-9 5.5-14.5 15-15-.5 9.5-6 15-15 15z"/><path d="M5 20l8-8"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></symbol>
+  <symbol id="i-train" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M9 21l-2-4M15 21l2-4"/></symbol>
+  <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.8-2.5h6.4L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 10.5L12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2.5-6 2.5 2.5V21M9 12l1.5-4.5 3 1 2 3.5h3M10.5 7.5L7 10v3"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 16h18v3h-3v-1H6v1H3z"/><circle cx="7.5" cy="13" r=".8"/><circle cx="16.5" cy="13" r=".8"/></symbol>
+  <symbol id="i-bus" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="15" rx="2.5"/><path d="M5 11h14M8 21v-3M16 21v-3M8 15h.01M16 15h.01"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8 5.5 5.5 0 0 0-10.7 1.5A3.3 3.3 0 0 0 7 18z"/></symbol>
+  <symbol id="i-rain" viewBox="0 0 24 24"><path d="M7 15h10a4 4 0 0 0 .5-8 5.5 5.5 0 0 0-10.7 1.5A3.3 3.3 0 0 0 7 15z"/><path d="M9 18l-1 2.5M13 18l-1 2.5M17 18l-1 2.5"/></symbol>
+  <symbol id="i-closed" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9l1.5-5h13L20 9M4 9h16v11H4zM4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-gps" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></symbol>
+  <symbol id="i-bowl" viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M8 7c0-1.5 1-1.5 1-3M12 7c0-1.5 1-1.5 1-3M16 7c0-1.5 1-1.5 1-3"/></symbol>
+</svg>
+
+<div class="app">
+  <!-- ===================== DISCOVER ===================== -->
+  <div id="view-home">
+    <header class="hero">
+      <div class="topbar">
+        <div class="logo"><span class="mark"><svg><use href="#i-bowl"/></svg></span><span>hawker<em>fit</em></span></div>
+        <div class="top-actions">
+          <button class="chip-btn" id="locBtn"><svg><use href="#i-pin"/></svg><span id="locLabel">Set location</span></button>
+          <button class="icon-btn" id="themeBtn" title="Theme: system"><svg><use href="#i-theme"/></svg></button>
+        </div>
+      </div>
+      <h1><span id="greet">Good evening</span>,<br>what's for makan?</h1>
+      <div class="weather" id="weather"></div>
+    </header>
+
+    <form class="search" id="searchForm">
+      <svg><use href="#i-search"/></svg>
+      <input id="query" type="search" autocomplete="off" maxlength="300" placeholder="Ask anything: dish, area, budget…">
+      <button class="go" type="submit">Ask</button>
+    </form>
+
+    <div id="discover">
+      <button class="spin-card" id="spinOpen">
+        <span class="mini"></span>
+        <span><b>Can't decide? Spin for it</b><small>We'll pick an open hawker centre near you</small></span>
+      </button>
+
+      <section class="block"><div class="cats" id="cats"></div></section>
+
+      <section class="block">
+        <div class="sec-head"><h2 id="listTitle">Hawker centres</h2><span id="listSub"></span></div>
+        <div class="centres" id="centres">
+          <div class="hc"><div class="photo sk"></div><div class="info"><div class="sk" style="height:14px;width:70%"></div><div class="sk" style="height:12px;width:50%;margin-top:8px"></div></div></div>
+        </div>
+        <button class="more hidden" id="moreBtn">Show more</button>
+      </section>
+    </div>
+
+    <div id="results"></div>
+    <p class="foot">Hawker centres, photos &amp; cleaning closures: NEA via data.gov.sg. Weather: NEA 2-hour forecast.
+      Travel times and prices are estimates.</p>
+  </div>
+
+  <!-- ===================== SCAN ===================== -->
+  <div id="view-scan" class="hidden">
+    <div class="page-title"><h1>Scan food or a menu</h1><p>Calories, macros and what to order for your goal.</p></div>
+    <label class="upload">
+      <input type="file" id="photo" accept="image/jpeg,image/png,image/webp,image/gif">
+      <div class="big"><svg><use href="#i-camera"/></svg></div>
+      <strong>Snap your plate or a stall menu</strong>
+      <small>Works with food photos, signboards and menus</small>
+      <img id="preview" class="hidden" alt="">
+      <span class="change hidden" id="change">Change photo</span>
+    </label>
+    <div class="label">Your goal</div>
+    <div class="pad"><div class="seg" id="goal">
+      <button data-goal="cut" aria-pressed="false">Cutting<small>Lose fat</small></button>
+      <button data-goal="maintain" aria-pressed="true">Maintain<small>Balanced</small></button>
+      <button data-goal="bulk" aria-pressed="false">Bulking<small>Build muscle</small></button>
+    </div>
+    <div class="field"><input type="text" id="menuQ" maxlength="300" placeholder="Anything to ask? e.g. I need 40 g protein"></div>
+    <button class="wide primary" id="menuBtn">Analyse photo</button></div>
+    <div id="menuResults" class="pad"></div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button data-view="home" aria-current="page"><svg><use href="#i-home"/></svg>Discover</button>
+  <button data-view="scan"><svg><use href="#i-camera"/></svg>Scan</button>
+</nav>
+
+<div id="sheetHost"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const icon = (id, size) => `<svg${size ? ` style="width:${size}px;height:${size}px"` : ""}><use href="#i-${id}"/></svg>`;
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+                set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} } };
+
+const PALETTE = [["#4338ca", "#818cf8"], ["#c2410c", "#f59e0b"], ["#1e3a8a", "#3b82f6"], ["#6d28d9", "#c084fc"],
+                 ["#334155", "#64748b"], ["#b45309", "#eab308"], ["#0e7490", "#22d3ee"], ["#9d174d", "#f472b6"]];
+const hash = (t) => { let h = 0; for (const ch of String(t)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+const swatch = (t) => { const [a, b] = PALETTE[hash(t) % PALETTE.length]; return `background:linear-gradient(135deg,${a},${b})`; };
+const initials = (n) => String(n).split(/\s+/).filter(w => /^[A-Za-z]/.test(w)).slice(0, 2).map(w => w[0].toUpperCase()).join("") || "•";
+function photoEl(c, size = 92) {
+  const fb = `<div class="photo" style="${swatch(c.name)};width:${size}px;height:${size}px">${esc(initials(c.name))}</div>`;
+  if (!c.photo) return fb;
+  return `<img class="photo" style="width:${size}px;height:${size}px" loading="lazy" src="${esc(c.photo)}" alt=""
+           onerror="this.outerHTML=this.dataset.fb" data-fb="${esc(fb)}">`;
+}
+
+let toastTimer;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 4000); }
+async function readError(res) { try { const j = await res.json(); return j.detail || `Something went wrong (${res.status})`; }
+                                catch { return `Something went wrong (${res.status})`; } }
+
+// ---------- theme ----------
+const THEMES = ["system", "light", "dark"];
+function applyTheme(t) {
+  if (t === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+  $("#themeBtn").title = `Theme: ${t}`;
+}
+let theme = store.get("hf-theme") || "system"; applyTheme(theme);
+$("#themeBtn").addEventListener("click", () => {
+  theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; store.set("hf-theme", theme); applyTheme(theme); toast(`Theme: ${theme}`);
+});
+
+// ---------- greeting ----------
+const hr = new Date().getHours();
+$("#greet").textContent = hr < 5 ? "Still awake" : hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+
+// ---------- nav ----------
+document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".nav button").forEach(x => x.removeAttribute("aria-current"));
+  b.setAttribute("aria-current", "page");
+  $("#view-home").classList.toggle("hidden", b.dataset.view !== "home");
+  $("#view-scan").classList.toggle("hidden", b.dataset.view !== "scan");
+  window.scrollTo({ top: 0 });
+}));
+
+// ---------- sheets ----------
+function openSheet(html, onMount) {
+  const host = $("#sheetHost");
+  host.innerHTML = `<div class="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div></div>`;
+  const scrim = $(".scrim", host);
+  scrim.addEventListener("click", e => { if (e.target === scrim) closeSheet(); });
+  document.body.style.overflow = "hidden";
+  onMount && onMount($(".sheet", host));
+}
+function closeSheet() { $("#sheetHost").innerHTML = ""; document.body.style.overflow = ""; }
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+
+// ---------- location ----------
+let loc = null; // {lat, lng, label}
+try { loc = JSON.parse(store.get("hf-loc")) || null; } catch {}
+function setLoc(l) {
+  loc = l; store.set("hf-loc", l ? JSON.stringify(l) : null);
+  $("#locLabel").textContent = l ? l.label : "Set location";
+  loadCentres();
+}
+$("#locLabel").textContent = loc ? loc.label : "Set location";
+
+$("#locBtn").addEventListener("click", () => openSheet(`
+  <h2>Where are you?</h2>
+  <p class="sub2">We use this to sort hawker centres, check rain nearby and estimate travel times.</p>
+  <form class="field" id="locForm"><input id="locInput" placeholder="Postal code, area or hawker centre" autocomplete="off" maxlength="100">
+    <button class="go" type="submit">Find</button></form>
+  <button class="wide ghost" id="gpsBtn">${icon("gps", 18)}Use my current location</button>
+  ${loc ? `<button class="wide ghost" id="clearLoc" style="color:var(--muted)">Clear location</button>` : ""}`, (s) => {
+  $("#locInput", s).focus();
+  $("#locForm", s).addEventListener("submit", async e => {
+    e.preventDefault();
+    const q = $("#locInput", s).value.trim(); if (!q) return;
+    const res = await fetch("/api/locate?q=" + encodeURIComponent(q));
+    if (!res.ok) return toast(await readError(res));
+    const hit = await res.json(); closeSheet(); setLoc({ lat: hit.lat, lng: hit.lng, label: hit.label.replace(/ \(postal.*\)/, "") });
+    if (hit.approx) toast(`Using approximate location: ${hit.label}`);
+  });
+  $("#gpsBtn", s).addEventListener("click", () => {
+    if (!navigator.geolocation) return toast("Location isn't available on this device.");
+    $("#gpsBtn", s).textContent = "Locating…";
+    navigator.geolocation.getCurrentPosition(
+      p => { closeSheet(); setLoc({ lat: p.coords.latitude, lng: p.coords.longitude, label: "Near you" }); },
+      () => { $("#gpsBtn", s).innerHTML = `${icon("gps", 18)}Use my current location`; toast("Couldn't get your location. Try a postal code instead."); },
+      { timeout: 8000 });
+  });
+  $("#clearLoc", s)?.addEventListener("click", () => { closeSheet(); setLoc(null); });
+}));
+
+// ---------- centres + weather ----------
+let centres = [], shown = 10, byId = {};
+async function loadCentres() {
+  const qs = loc ? `?lat=${loc.lat}&lng=${loc.lng}` : "";
+  try {
+    const res = await fetch("/api/centres" + qs);
+    const data = await res.json();
+    centres = data.centres; byId = Object.fromEntries(centres.map(c => [c.id, c]));
+    shown = 10; renderCentres(); renderWeather(data);
+  } catch { $("#centres").innerHTML = `<div class="note">${icon("info")}<span>Couldn't load hawker centres. Is the server running?</span></div>`; }
+}
+
+function renderWeather(data) {
+  const el = $("#weather");
+  let w = null;
+  if (loc && centres[0]) w = centres[0].weather;
+  if (!w) {
+    const rainy = centres.filter(c => c.weather?.rainy).length;
+    el.className = "weather" + (rainy ? " rainy" : "");
+    el.innerHTML = centres.length ? `${icon(rainy ? "rain" : "cloud")}<span>${rainy ? `Rain expected at ${rainy} hawker centres right now` : "Dry across Singapore right now"}${data.weather_period ? ` · ${esc(data.weather_period)}` : ""}</span>` : "";
+    return;
+  }
+  el.className = "weather" + (w.rainy ? " rainy" : "");
+  el.innerHTML = `${icon(w.rainy ? "rain" : "cloud")}<span>${esc(w.forecast)} in ${esc(w.area)}${data.weather_period ? ` · ${esc(data.weather_period)}` : ""}</span>`;
+}
+
+function badges(c) {
+  const b = [];
+  if (c.closed_today) b.push(`<span class="badge b-closed">${icon("closed")}Closed today</span>`);
+  else if (c.closure_note) b.push(`<span class="badge b-soon">${esc(c.closure_note)}</span>`);
+  if (c.weather?.rainy) b.push(`<span class="badge b-rain">${icon("rain")}${esc(c.weather.forecast)}</span>`);
+  if (c.open_late) b.push(`<span class="badge b-late">${icon("moon")}Supper spot</span>`);
+  return b.length ? `<div class="badges">${b.join("")}</div>` : "";
+}
+function travelMeta(c) {
+  if (c.distance_km == null) return "";
+  return `<span>${icon("pin")}${c.distance_km} km</span>` +
+    (c.distance_km <= 3 ? `<span>${icon("walk")}${c.walk_min} min</span>` : "") + `<span>${icon("car")}~${c.drive_min} min</span>`;
+}
+function centreCard(c) {
+  const known = c.known_for?.length ? c.known_for.slice(0, 2).map(k => k.split(" (")[0]).join(" · ")
+               : (c.food_stalls ? `${c.food_stalls} food stalls` : c.address);
+  return `<button class="hc" data-id="${esc(c.id)}">${photoEl(c)}
+    <div class="info"><h3>${esc(c.name)}</h3><div class="sub">${esc(known)}</div>
+      <div class="metas">${travelMeta(c)}${c.distance_km == null && c.food_stalls ? `<span>${icon("store")}${c.food_stalls} stalls</span>` : ""}</div>
+      ${badges(c)}</div></button>`;
+}
+function renderCentres() {
+  $("#listTitle").textContent = loc ? "Nearest hawker centres" : "Hawker centres";
+  $("#listSub").textContent = `${centres.length} centres · ${centres.filter(c => c.closed_today).length} closed today`;
+  let list = centres;
+  if (!loc) list = [...centres].sort((a, b) => (b.known_for?.length ? 1 : 0) - (a.known_for?.length ? 1 : 0));
+  $("#centres").innerHTML = list.slice(0, shown).map(centreCard).join("");
+  $("#moreBtn").classList.toggle("hidden", shown >= list.length);
+  document.querySelectorAll(".hc").forEach(el => el.addEventListener("click", () => openCentre(byId[el.dataset.id])));
+}
+$("#moreBtn").addEventListener("click", () => { shown += 15; renderCentres(); });
+
+function dirLinks(c) {
+  const base = `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}&travelmode=`;
+  return `<div class="dirs">
+    <a href="${base}walking" target="_blank" rel="noopener">${icon("walk")}Walk${c.walk_min ? ` · ${c.walk_min}m` : ""}</a>
+    <a href="${base}transit" target="_blank" rel="noopener">${icon("bus")}Transit</a>
+    <a href="${base}driving" target="_blank" rel="noopener">${icon("car")}Drive${c.drive_min ? ` · ~${c.drive_min}m` : ""}</a></div>`;
+}
+function openCentre(c) {
+  if (!c) return;
+  openSheet(`
+    ${c.photo ? `<img class="detail-photo" src="${esc(c.photo)}" alt="" onerror="this.remove()">` : ""}
+    <h2 style="margin-top:12px">${esc(c.name)}</h2>
+    <p class="sub2">${esc(c.address)}</p>
+    ${badges(c)}
+    <div class="facts">
+      <div class="fact"><b>${c.food_stalls ?? "—"}</b><small>food stalls</small></div>
+      <div class="fact"><b>${c.distance_km != null ? c.distance_km + " km" : "—"}</b><small>away</small></div>
+      <div class="fact"><b>${c.weather ? (c.weather.rainy ? "Rain" : "Dry") : "—"}</b><small>next 2 hrs</small></div>
+    </div>
+    ${c.known_for?.length ? `<div class="pills" style="margin-bottom:10px">${c.known_for.map(k => `<span class="pill">${esc(k)}</span>`).join("")}</div>` : ""}
+    ${c.description ? `<p class="text">${esc(c.description)}</p>` : ""}
+    ${c.nearest_mrt ? `<p class="text">${icon("train", 14)} Nearest MRT: ${esc(c.nearest_mrt)}</p>` : ""}
+    ${dirLinks(c)}
+    <button class="wide primary" id="askHere">${icon("sparkle", 18)}What should I eat here?</button>`, (s) => {
+    $("#askHere", s).addEventListener("click", () => { closeSheet(); search(`What should I eat at ${c.name}?`, c.name); });
+  });
+}
+
+
+// ---------- spin the wheel ----------
+const WHEEL_COLORS = ["#4338ca", "#d9f99d", "#6366f1", "#fde68a", "#312e81", "#a5b4fc", "#c2410c", "#fecaca"];
+let wheelRot = 0, wheelPool = [], spinning = false, spinMode = "near";
+function buildPool() {
+  const open = centres.filter(c => !c.closed_today);
+  let pool;
+  if (spinMode === "supper") pool = open.filter(c => c.open_late);
+  else if (spinMode === "famous") pool = open.filter(c => c.known_for?.length);
+  else pool = loc ? open.slice(0, 12) : open;
+  pool = [...pool].sort(() => Math.random() - .5).slice(0, 8);
+  return pool;
+}
+function drawWheel(canvas, pool) {
+  const dpr = window.devicePixelRatio || 1, size = 300;
+  canvas.width = size * dpr; canvas.height = size * dpr;
+  const g = canvas.getContext("2d"); g.scale(dpr, dpr);
+  const n = pool.length, a = 2 * Math.PI / n, r = size / 2;
+  pool.forEach((c, i) => {
+    g.beginPath(); g.moveTo(r, r); g.arc(r, r, r, -Math.PI / 2 + i * a, -Math.PI / 2 + (i + 1) * a); g.closePath();
+    const col = WHEEL_COLORS[i % WHEEL_COLORS.length]; g.fillStyle = col; g.fill();
+    g.save(); g.translate(r, r); g.rotate(-Math.PI / 2 + (i + .5) * a);
+    g.textAlign = "right"; g.textBaseline = "middle";
+    g.fillStyle = ["#d9f99d", "#fde68a", "#a5b4fc", "#fecaca"].includes(col) ? "#1e1b4b" : "#fff";
+    g.font = "700 11px 'Plus Jakarta Sans', sans-serif";
+    let label = c.name.length > 20 ? c.name.slice(0, 19) + "…" : c.name;
+    g.fillText(label, r - 14, 0); g.restore();
+  });
+}
+function openSpin() {
+  if (!centres.length) return toast("Hawker centres are still loading.");
+  openSheet(`
+    <h2>Spin for your makan</h2>
+    <p class="sub2">${loc ? `Open hawker centres near ${esc(loc.label)}` : "Set a location to spin only nearby places"}. Closed-for-cleaning centres are left out.</p>
+    <div class="seg" id="spinMode">
+      <button data-m="near" aria-pressed="${spinMode === "near"}">${loc ? "Nearby" : "Anywhere"}</button>
+      <button data-m="famous" aria-pressed="${spinMode === "famous"}">Famous</button>
+      <button data-m="supper" aria-pressed="${spinMode === "supper"}">Supper</button>
+    </div>
+    <div class="wheel-wrap"><div class="pointer"></div><canvas id="wheel"></canvas><div class="hub">GO</div></div>
+    <button class="wide primary" id="spinBtn">Spin the wheel</button>
+    <div class="winner" id="winner"></div>`, (s) => {
+    const canvas = $("#wheel", s);
+    const reset = () => {
+      wheelPool = buildPool(); wheelRot = 0;
+      canvas.style.transition = "none"; canvas.style.transform = "rotate(0deg)";
+      void canvas.offsetWidth; canvas.style.transition = "";
+      $("#winner", s).innerHTML = "";
+      if (wheelPool.length < 2) { $("#winner", s).innerHTML = `<div class="note">${icon("info")}<span>Not enough open places for this filter right now.</span></div>`; }
+      drawWheel(canvas, wheelPool.length ? wheelPool : [{ name: "—" }, { name: "—" }]);
+    };
+    reset();
+    s.querySelectorAll("#spinMode button").forEach(b => b.addEventListener("click", () => {
+      if (spinning) return; spinMode = b.dataset.m;
+      s.querySelectorAll("#spinMode button").forEach(x => x.setAttribute("aria-pressed", x === b)); reset();
+    }));
+    const spin = () => {
+      if (spinning || wheelPool.length < 2) return;
+      spinning = true; $("#winner", s).innerHTML = "";
+      const n = wheelPool.length, seg = 360 / n, win = Math.floor(Math.random() * n);
+      const jitter = (Math.random() - .5) * seg * .6;
+      const target = 360 - (win + .5) * seg + jitter;
+      wheelRot = wheelRot - (wheelRot % 360) + 360 * 6 + target;
+      canvas.style.transform = `rotate(${wheelRot}deg)`;
+      setTimeout(() => { spinning = false; showWinner(s, wheelPool[win]); }, 4300);
+    };
+    $("#spinBtn", s).addEventListener("click", spin);
+    $(".hub", s).addEventListener("click", spin);
+  });
+}
+function showWinner(s, c) {
+  $("#spinBtn", s).textContent = "Spin again";
+  $("#winner", s).innerHTML = `
+    <div class="item"><div class="row">${photoEl(c, 80)}
+      <div class="info" style="flex:1;min-width:0"><div class="sub" style="color:var(--brand);font-weight:700">You're eating at</div>
+        <h3>${esc(c.name)}</h3><div class="metas">${travelMeta(c)}</div>${badges(c)}</div></div>
+      ${c.known_for?.length ? `<p class="why">Known for ${esc(c.known_for.slice(0, 3).map(k => k.split(" (")[0]).join(", "))}.</p>` : ""}
+      <div style="margin-top:10px">${dirLinks(c)}</div>
+      <button class="wide ghost" id="winInfo">${icon("info", 18)}More details</button>
+      <button class="wide primary" id="winAsk">${icon("sparkle", 18)}What should I eat here?</button></div>`;
+  $("#winAsk", s).addEventListener("click", () => { closeSheet(); search(`What should I eat at ${c.name}?`, c.name); });
+  $("#winInfo", s).addEventListener("click", () => openCentre(c));
+}
+$("#spinOpen").addEventListener("click", openSpin);
+
+// ---------- categories ----------
+const CATS = [
+  ["Supper", "moon", "#eef2ff", "#4f46e5", "Good supper spots open late"],
+  ["Halal", "badge", "#ecfdf5", "#059669", "Halal food options"],
+  ["High protein", "dumbbell", "#f7fee7", "#4d7c0f", "High-protein, gym-friendly hawker meals"],
+  ["Under $5", "wallet", "#fff7ed", "#ea580c", "Filling meals under $5"],
+  ["Breakfast", "sun", "#fefce8", "#ca8a04", "Classic local breakfast"],
+  ["Must-try", "star", "#fdf2f8", "#db2777", "Must-try dishes for a first-timer"],
+  ["Vegetarian", "leaf", "#f0fdf4", "#16a34a", "Vegetarian-friendly hawker food"],
+  ["Rainy day", "rain", "#e0f2fe", "#0369a1", "Comfort food somewhere I can stay dry, close to me"],
+];
+$("#cats").innerHTML = CATS.map(([label, ic, bg, fg], i) =>
+  `<button class="cat" data-i="${i}"><span class="ic" style="background:${bg};color:${fg}">${icon(ic)}</span>${label}</button>`).join("");
+document.querySelectorAll(".cat").forEach(c => c.addEventListener("click", () => { const k = CATS[c.dataset.i]; search(k[4], k[0]); }));
+
+// ---------- AI search ----------
+$("#searchForm").addEventListener("submit", e => { e.preventDefault(); const q = $("#query").value.trim(); if (q) search(q); });
+function skeleton(n = 3) {
+  return Array.from({ length: n }, () => `<div class="item"><div class="row"><div class="photo sk"></div><div style="flex:1">
+    <div class="sk" style="height:16px;width:70%"></div><div class="sk" style="height:12px;width:50%;margin-top:8px"></div>
+    <div class="sk" style="height:12px;width:90%;margin-top:14px"></div></div></div></div>`).join("");
+}
+let busy = false;
+async function search(query, title) {
+  if (busy) return; busy = true;
+  $("#query").value = query; $("#discover").classList.add("hidden");
+  $("#results").innerHTML = `<div class="res-head"><h2>${esc(title || "Results")}</h2></div>${skeleton()}`;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  try {
+    const res = await fetch("/api/recommend", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, ...(loc ? { lat: loc.lat, lng: loc.lng } : {}) }) });
+    if (!res.ok) { toast(await readError(res)); return resetHome(); }
+    renderFood(await res.json(), title);
+  } catch { toast("Can't connect right now. Check that the server is running."); resetHome(); }
+  finally { busy = false; }
+}
+function resetHome() { $("#results").innerHTML = ""; $("#discover").classList.remove("hidden"); }
+function renderFood(data, title) {
+  const picks = data.picks || [];
+  const cards = picks.map((p, i) => {
+    const c = p.centre;
+    return `<article class="item"><div class="row">${photoEl(c, 84)}
+      <div class="info" style="flex:1;min-width:0">
+        <h3>${esc(p.dish)}</h3><div class="sub">${esc(c.name)}</div>
+        <div class="metas"><span class="price">${esc(p.est_price)}</span>${travelMeta(c)}</div>${badges(c)}</div></div>
+      <p class="why">${esc(p.why)}</p>
+      <div class="pills">${(p.tags || []).slice(0, 4).map(t => `<span class="pill">${esc(t)}</span>`).join("")}</div>
+      <div class="actions"><button class="btn-o" data-open="${esc(c.id)}">${icon("info")}Details &amp; directions</button></div>
+    </article>`;
+  }).join("");
+  $("#results").innerHTML = `<div class="res-head"><h2>${esc(title || `${picks.length} picks for you`)}</h2>
+      <button class="link" id="backBtn">Back</button></div>
+    <p class="lead">${esc(data.reply)}</p>
+    ${cards || `<div class="note">${icon("info")}<span>No matches found. Try a different area or dish.</span></div>`}
+    ${data.tip ? `<div class="note">${icon("info")}<span>${esc(data.tip)}</span></div>` : ""}`;
+  $("#backBtn").addEventListener("click", () => { $("#query").value = ""; resetHome(); });
+  document.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", () => {
+    const p = picks.find(x => x.centre.id === b.dataset.open); openCentre(p.centre);
+  }));
+}
+
+// ---------- scan ----------
+const photo = $("#photo");
+photo.addEventListener("change", () => { const f = photo.files[0]; if (!f) return;
+  const img = $("#preview"); img.src = URL.createObjectURL(f); img.classList.remove("hidden"); $("#change").classList.remove("hidden"); });
+let goal = "maintain";
+document.querySelectorAll("#goal button").forEach(b => b.addEventListener("click", () => {
+  goal = b.dataset.goal; document.querySelectorAll("#goal button").forEach(x => x.setAttribute("aria-pressed", x === b)); }));
+const GOAL_LABEL = { cut: "Cutting · lose fat", maintain: "Maintain · balanced", bulk: "Bulking · build muscle" };
+$("#menuBtn").addEventListener("click", async () => {
+  const f = photo.files[0]; if (!f) return toast("Add a photo first.");
+  const btn = $("#menuBtn"); btn.disabled = true; btn.textContent = "Analysing…";
+  $("#menuResults").innerHTML = `<div class="res-head"><h2>Analysing</h2></div>${skeleton(3)}`;
+  try {
+    const form = new FormData(); form.append("image", f); form.append("question", $("#menuQ").value); form.append("goal", goal);
+    const res = await fetch("/api/menu", { method: "POST", body: form });
+    if (!res.ok) { toast(await readError(res)); $("#menuResults").innerHTML = ""; return; }
+    renderMenu(await res.json());
+  } catch { toast("Can't connect right now. Check that the server is running."); $("#menuResults").innerHTML = ""; }
+  finally { btn.disabled = false; btn.textContent = "Analyse photo"; }
+});
+function nutritionBlock(n, portion) {
+  if (!n) return "";
+  const pK = n.protein_g * 4, cK = n.carbs_g * 4, fK = n.fat_g * 9, sum = Math.max(1, pK + cK + fK);
+  const macro = (k, v, kcal, color) => `<div class="macro"><div class="k">${k}</div><div class="v">${v} g</div>
+    <div class="bar"><i style="width:${Math.round(kcal / sum * 100)}%;background:${color}"></i></div></div>`;
+  const hiNa = n.sodium_mg >= 1500;
+  return `<div class="nut"><div class="kcal"><b>${n.calories}<small>kcal</small></b><span>${esc(portion || "per serving")}</span></div>
+    <div class="macros">${macro("Protein", n.protein_g, pK, "#4338ca")}${macro("Carbs", n.carbs_g, cK, "#f59e0b")}${macro("Fat", n.fat_g, fK, "#e11d48")}</div>
+    <div class="minor"><span>Fibre ${n.fibre_g} g</span><span>Sugar ${n.sugar_g} g</span>
+      <span class="${hiNa ? "warn" : ""}">Sodium ${n.sodium_mg.toLocaleString()} mg${hiNa ? " · high" : ""}</span></div></div>`;
+}
+function proteinPill(n) { if (!n || !n.calories) return ""; const s = n.protein_g * 4 / n.calories;
+  return s >= .3 ? `<span class="pill">High protein</span>` : s < .12 ? `<span class="pill grey">Low protein</span>` : ""; }
+function spicePill(n) { return !n ? `<span class="pill grey">Not spicy</span>` : `<span class="pill hot">${["", "Mild", "Medium", "Hot"][Math.min(3, n)]} spice</span>`; }
+function renderMenu(data) {
+  const list = data.dishes || [];
+  const dishes = list.map(d => `<article class="dish">
+      <div class="top"><div><h3>${esc(d.english_name)}</h3><div class="orig">${esc(d.original_name)}</div></div>${d.price ? `<span class="price">${esc(d.price)}</span>` : ""}</div>
+      <p>${esc(d.description)}</p><div class="pills">${proteinPill(d.nutrition)}${spicePill(d.spice_level)}</div>
+      ${d.dietary_notes ? `<p style="color:var(--muted);font-size:12px">${esc(d.dietary_notes)}</p>` : ""}
+      ${nutritionBlock(d.nutrition, d.portion)}
+      ${d.fitness_tip ? `<div class="tipline">${icon("dumbbell")}<span>${esc(d.fitness_tip)}</span></div>` : ""}</article>`).join("");
+  let total = "";
+  if (data.kind === "food" && list.length > 1) {
+    const t = { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fibre_g: 0, sugar_g: 0, sodium_mg: 0 };
+    list.forEach(d => Object.keys(t).forEach(k => t[k] += (d.nutrition?.[k] || 0)));
+    total = `<div class="total"><h3>Whole meal</h3>${nutritionBlock(t, `${list.length} items`)}</div>`;
+  }
+  const picks = data.gym_picks || [];
+  const gym = picks.length ? `<div class="gym"><h3>${icon("dumbbell")}Best for your goal</h3><div class="goal">${GOAL_LABEL[goal]}</div>
+      <ol>${picks.map(p => `<li><div><b>${esc(p.dish)}</b>${esc(p.reason)}</div></li>`).join("")}</ol>
+      ${data.macro_tip ? `<div class="mt">${esc(data.macro_tip)}</div>` : ""}</div>` : "";
+  const heading = data.kind === "food" ? (list.length === 1 ? "Your meal" : `${list.length} items on your plate`) : `${list.length} dishes found`;
+  $("#menuResults").innerHTML = `<div class="res-head"><h2>${heading}</h2></div><p class="lead">${esc(data.summary)}</p>${gym}${total}${dishes}
+    ${data.recommendation && data.kind === "menu" ? `<div class="note">${icon("star")}<span>Taste pick: ${esc(data.recommendation)}</span></div>` : ""}
+    ${list.length ? `<p class="disclaim">Nutrition values are AI estimates for a typical portion and can vary by stall by about 20%.</p>` : ""}`;
+}
+
+loadCentres();
+</script>
+</body>
+</html>
