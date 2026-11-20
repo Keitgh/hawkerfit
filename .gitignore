@@ -6,3 +6,4 @@ __pycache__/
 data/cache_*.json
 hawkerfit-upload/
 data/ratings.json
+data/stalls.json

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>HawkerFit Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/page.css">
+<style>
+  .wrap { max-width: 860px; }
+  h1 { font-size: 30px; margin-top: 32px; }
+  input, textarea, select { width: 100%; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--line);
+                  background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; outline: none; }
+  input:focus, textarea:focus { border-color: var(--ink); }
+  textarea { min-height: 150px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.6; }
+  label { display: block; font-size: 12px; font-weight: 700; color: var(--ink-2); margin: 10px 0 4px; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { flex: 1; }
+  button { font: inherit; cursor: pointer; border: 0; }
+  .btn { flex: 0 0 auto; }
+  .btn.danger { background: #b91c1c; color: #fff; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .hidden { display: none !important; }
+  .centre-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip { padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink); }
+  .chip.on { background: var(--ink); color: var(--bg); }
+  .stall-card { position: relative; }
+  .stall-card.is-hidden { opacity: .6; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); margin-left: 6px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .msg { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--cta); color: var(--on-cta);
+         padding: 12px 16px; border-radius: 12px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .msg.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="logo" href="/"><span class="mark"><svg viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M8 7c0-1.5 1-1.5 1-3M12 7c0-1.5 1-1.5 1-3M16 7c0-1.5 1-1.5 1-3"/></svg></span><span>hawker<em>fit</em></span></a>
+    <a class="back" href="/">Back to app</a>
+  </div>
+  <h1>Admin</h1>
+  <p class="lead">Check, fix, hide or delete stalls and menus that visitors have added.</p>
+
+  <!-- step 1: password -->
+  <form class="card" id="login">
+    <label for="pw">Admin password</label>
+    <div class="row"><input id="pw" type="password" autocomplete="current-password" placeholder="Your ADMIN_PASSWORD">
+      <button class="btn" type="submit">Unlock</button></div>
+    <p class="muted" id="loginMsg">The password is set as ADMIN_PASSWORD in your Render environment settings.</p>
+  </form>
+
+  <!-- step 2: pick a centre and edit its stalls -->
+  <div id="panel" class="hidden">
+    <div class="card">
+      <label>Centres with stalls listed</label>
+      <div class="centre-list" id="withStalls"><span class="muted">Loading…</span></div>
+      <label for="find">Or find any hawker centre</label>
+      <input id="find" placeholder="Type a name, e.g. Maxwell" list="centreNames">
+      <datalist id="centreNames"></datalist>
+    </div>
+    <h2 id="centreTitle"></h2>
+    <div id="stalls"></div>
+  </div>
+</div>
+<div class="msg" id="msg"></div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+let pw = "", centres = [], current = null, msgTimer;
+try { pw = sessionStorage.getItem("hf-admin") || ""; } catch {}
+function msg(t) { const m = $("#msg"); m.textContent = t; m.classList.add("show"); clearTimeout(msgTimer); msgTimer = setTimeout(() => m.classList.remove("show"), 3500); }
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { "Content-Type": "application/json", "X-Admin-Password": pw, ...(opts.headers || {}) } });
+  if (!res.ok) { let d = `Error ${res.status}`; try { d = (await res.json()).detail || d; } catch {} throw Object.assign(new Error(d), { status: res.status }); }
+  return res.json();
+}
+
+// ---- login (password kept only for this browser tab)
+async function unlock() {
+  try {
+    await api("/api/admin/check");
+    try { sessionStorage.setItem("hf-admin", pw); } catch {}
+    $("#login").classList.add("hidden"); $("#panel").classList.remove("hidden");
+    loadCentres();
+  } catch (e) { $("#loginMsg").textContent = e.message; try { sessionStorage.removeItem("hf-admin"); } catch {} }
+}
+$("#login").addEventListener("submit", e => { e.preventDefault(); pw = $("#pw").value; unlock(); });
+if (pw) unlock();
+
+// ---- centres
+async function loadCentres() {
+  centres = (await (await fetch("/api/centres")).json()).centres.sort((a, b) => a.name.localeCompare(b.name));
+  $("#centreNames").innerHTML = centres.map(c => `<option value="${esc(c.name)}">`).join("");
+  const withStalls = centres.filter(c => c.stall_count).sort((a, b) => b.stall_count - a.stall_count);
+  $("#withStalls").innerHTML = withStalls.length
+    ? withStalls.map(c => `<button class="chip${current?.id === c.id ? " on" : ""}" data-id="${esc(c.id)}">${esc(c.name)} (${c.stall_count})</button>`).join("")
+    : `<span class="muted">No stalls added yet.</span>`;
+  $("#withStalls").querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => openCentre(b.dataset.id)));
+}
+$("#find").addEventListener("change", e => { const c = centres.find(x => x.name === e.target.value); if (c) openCentre(c.id); });
+
+// ---- stalls of one centre
+const toText = (dishes) => dishes.map(d => d.price != null ? `${d.name} | ${d.price}` : d.name).join("\n");
+const fromText = (t) => t.split("\n").map(l => l.trim()).filter(Boolean).map(l => {
+  const [name, price] = l.split("|").map(x => x.trim());
+  return { name, price: price ? Number(price.replace(/[^0-9.]/g, "")) || null : null };
+});
+async function openCentre(id) {
+  current = centres.find(c => c.id === id);
+  $("#centreTitle").textContent = current.name;
+  $("#stalls").innerHTML = `<p class="muted">Loading…</p>`;
+  document.querySelectorAll(".chip").forEach(b => b.classList.toggle("on", b.dataset.id === id));
+  const { stalls } = await api(`/api/admin/stalls?centre_id=${encodeURIComponent(id)}`);
+  $("#stalls").innerHTML = stalls.length ? stalls.map(s => `
+    <div class="card stall-card${s.hidden ? " is-hidden" : ""}" data-id="${esc(s.id)}">
+      <b>${esc(s.name)}</b>${s.hidden ? `<span class="tag">Hidden</span>` : ""}
+      <div class="row" style="margin-top:6px"><div><label>Stall name</label><input class="f-name" value="${esc(s.name)}"></div>
+        <div style="flex:.5"><label>Unit no.</label><input class="f-unit" value="${esc(s.unit || "")}"></div></div>
+      <label>Dishes: one per line, as <code>Dish name | price</code></label>
+      <textarea class="f-dishes">${esc(toText(s.dishes))}</textarea>
+      <div class="actions">
+        <button class="btn f-save">Save changes</button>
+        <button class="btn alt f-hide">${s.hidden ? "Show on site" : "Hide from site"}</button>
+        <button class="btn danger f-del">Delete</button>
+      </div>
+    </div>`).join("") : `<p class="muted">No stalls at this centre yet.</p>`;
+  $("#stalls").querySelectorAll(".stall-card").forEach(card => {
+    const id = card.dataset.id;
+    card.querySelector(".f-save").onclick = async () => {
+      try { await api(`/api/admin/stalls/${id}`, { method: "PUT", body: JSON.stringify({
+              name: card.querySelector(".f-name").value, unit: card.querySelector(".f-unit").value,
+              dishes: fromText(card.querySelector(".f-dishes").value) }) });
+            msg("Saved."); openCentre(current.id); } catch (e) { msg(e.message); }
+    };
+    card.querySelector(".f-hide").onclick = async () => {
+      const hide = !card.classList.contains("is-hidden");
+      try { await api(`/api/admin/stalls/${id}`, { method: "PUT", body: JSON.stringify({ hidden: hide }) });
+            msg(hide ? "Hidden from the site." : "Visible on the site again."); openCentre(current.id); loadCentres(); } catch (e) { msg(e.message); }
+    };
+    card.querySelector(".f-del").onclick = async () => {
+      if (!confirm("Delete this stall for good? This can't be undone. (Use 'Hide' if you might want it back.)")) return;
+      try { await api(`/api/admin/stalls/${id}`, { method: "DELETE" }); msg("Deleted."); openCentre(current.id); loadCentres(); } catch (e) { msg(e.message); }
+    };
+  });
+}
+</script>
+</body>
+</html>

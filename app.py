@@ -18,8 +18,12 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+import hmac
+import uuid as _uuid
+
 import ratings
 import sg_data
+import stalls
 
 BASE = Path(__file__).parent
 load_dotenv(BASE / ".env")  # lets you keep ANTHROPIC_API_KEY in a .env file
@@ -29,6 +33,8 @@ MAX_IMAGE_BYTES = 4_500_000
 IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 
 app = FastAPI(title="HawkerFit")
+# Pages are small: always check for a newer version so visitors see updates right after a deploy.
+NO_CACHE = {"Cache-Control": "no-cache"}
 _client = None
 
 # ---------------------------------------------------------------- AI usage limits
@@ -99,6 +105,7 @@ def public_centre(c: dict, lat=None, lng=None, weather=None, scores: dict | None
     s = (scores or {}).get(c["id"]) or {}
     out.update(rating=s.get("rating"), rating_count=s.get("count", 0),
                price=s.get("price"), price_label=s.get("price_label"))
+    out["stall_count"] = stall_counts().get(c["id"], 0)
     out["weather"] = sg_data.weather_at(c["lat"], c["lng"], weather)
     if in_singapore(lat, lng):
         km = sg_data.distance_km(lat, lng, c["lat"], c["lng"])
@@ -367,6 +374,253 @@ def rate(req: RateRequest, request: Request):
             "price": s.get("price"), "price_label": s.get("price_label")}
 
 
+# ---------------------------------------------------------------- stalls & menus (community-added)
+
+STALL_ADDS_PER_DAY = 8        # new stalls one visitor can add per day
+DISH_EDITS_PER_DAY = 30       # "add dishes to a stall" submissions per day
+STALL_COOLDOWN_SECONDS = 8
+_stall_usage = {"day": None, "adds": defaultdict(int), "edits": defaultdict(int), "last": {}}
+_stall_counts = {"data": {}, "at": 0.0}
+
+
+def stall_counts() -> dict:
+    if time.time() - _stall_counts["at"] > 60:
+        try:
+            _stall_counts.update(data=stalls.counts(), at=time.time())
+        except stalls.StallsError:
+            pass
+    return _stall_counts["data"]
+
+
+def _known_centre(cid: str) -> dict:
+    c = next((c for c in sg_data.get_centres() if c["id"] == cid), None)
+    if not c:
+        raise HTTPException(404, "Unknown hawker centre.")
+    return c
+
+
+def _valid_stall_id(sid: str) -> str:
+    try:
+        return str(_uuid.UUID(sid))
+    except ValueError:
+        raise HTTPException(404, "That stall doesn't exist.")
+
+
+def _stall_quota(request: Request, kind: str) -> None:
+    today = sg_data.now_sg().date().isoformat()
+    who, now = _visitor(request), time.time()
+    limit = STALL_ADDS_PER_DAY if kind == "adds" else DISH_EDITS_PER_DAY
+    with _usage_lock:
+        if _stall_usage["day"] != today:
+            _stall_usage.update(day=today, adds=defaultdict(int), edits=defaultdict(int), last={})
+        if now - _stall_usage["last"].get(who, 0) < STALL_COOLDOWN_SECONDS:
+            raise HTTPException(429, "Slow down a little! Try again in a few seconds.")
+        if _stall_usage[kind][who] >= limit:
+            raise HTTPException(429, "Thanks for all the help today! You've hit today's limit, so try again tomorrow.")
+        _stall_usage[kind][who] += 1
+        _stall_usage["last"][who] = now
+
+
+def public_stall(s: dict) -> dict:
+    return {"id": s["id"], "name": s["name"], "unit": s.get("unit"), "dishes": stalls.clean_dishes(s.get("dishes")),
+            "updated_at": s.get("updated_at")}
+
+
+class Dish(BaseModel):
+    name: str
+    price: float | None = None
+
+
+class NewStall(BaseModel):
+    name: str
+    unit: str | None = None
+    dishes: list[Dish] = []
+
+
+class MoreDishes(BaseModel):
+    dishes: list[Dish]
+
+
+def _clean_name(s: str, limit: int) -> str:
+    return " ".join(str(s or "").split())[:limit]
+
+
+@app.get("/api/centre/{centre_id}/stalls")
+def get_stalls(centre_id: str):
+    _known_centre(centre_id)
+    try:
+        return {"stalls": [public_stall(s) for s in stalls.list_stalls(centre_id)]}
+    except stalls.StallsError as e:
+        raise HTTPException(503, str(e))
+
+
+@app.post("/api/centre/{centre_id}/stalls")
+def create_stall(centre_id: str, body: NewStall, request: Request):
+    _known_centre(centre_id)
+    name, unit = _clean_name(body.name, 80), _clean_name(body.unit or "", 20)
+    if len(name) < 2:
+        raise HTTPException(400, "Please enter the stall's name.")
+    dishes = stalls.clean_dishes([d.model_dump() for d in body.dishes])
+    if not dishes:
+        raise HTTPException(400, "Add at least one dish (scan the menu photo or type it in).")
+    try:
+        existing = stalls.list_stalls(centre_id)
+    except stalls.StallsError as e:
+        raise HTTPException(503, str(e))
+    if any(s["name"].lower() == name.lower() and (s.get("unit") or "") == unit for s in existing):
+        raise HTTPException(409, "This stall is already listed. Open it to add more dishes instead.")
+    _stall_quota(request, "adds")
+    try:
+        row = stalls.add_stall(centre_id, name, unit, dishes, f"ip:{_visitor(request)}")
+    except stalls.StallsError as e:
+        raise HTTPException(503, str(e))
+    _stall_counts["at"] = 0
+    return public_stall(row)
+
+
+@app.post("/api/stalls/{stall_id}/dishes")
+def add_stall_dishes(stall_id: str, body: MoreDishes, request: Request):
+    stall_id = _valid_stall_id(stall_id)
+    dishes = stalls.clean_dishes([d.model_dump() for d in body.dishes])
+    if not dishes:
+        raise HTTPException(400, "Add at least one dish.")
+    _stall_quota(request, "edits")
+    try:
+        return public_stall(stalls.add_dishes(stall_id, dishes))
+    except stalls.StallsError as e:
+        raise HTTPException(404 if "exist" in str(e) else 503, str(e))
+
+
+MENU_EXTRACT_SYSTEM = """You read photos of Singapore hawker stall menu boards and signboards.
+Return the stall name (as written, in English if it has one) and every dish with its price in SGD.
+- Keep dish names short and as written; add the English name in brackets if the original is not English.
+- If a dish has several sizes or prices (e.g. $4/$5/$6), use the smallest price and note the sizes in the name like "(S/M/L)".
+- If no price is visible for a dish, use null. Never guess prices.
+- If the image is not a menu or signboard, return an empty dish list."""
+
+MENU_EXTRACT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "stall_name": {"type": "string"},
+        "dishes": {"type": "array", "items": {
+            "type": "object",
+            "properties": {"name": {"type": "string"}, "price": {"anyOf": [{"type": "number"}, {"type": "null"}]}},
+            "required": ["name", "price"], "additionalProperties": False}},
+    },
+    "required": ["stall_name", "dishes"],
+    "additionalProperties": False,
+}
+
+
+@app.post("/api/menu-extract")
+def menu_extract(request: Request, image: UploadFile = File(...)):
+    """Photo of a stall's menu -> stall name + dishes + prices, to pre-fill the add-a-stall form."""
+    if image.content_type not in IMAGE_TYPES:
+        raise HTTPException(400, "Please upload a JPG, PNG, WEBP or GIF photo.")
+    data = image.file.read()
+    if len(data) > MAX_IMAGE_BYTES:
+        raise HTTPException(400, "That photo is too big (max ~4.5 MB). Try a smaller one or a screenshot.")
+    content = [
+        {"type": "image", "source": {"type": "base64", "media_type": image.content_type,
+                                     "data": base64.standard_b64encode(data).decode()}},
+        {"type": "text", "text": "Read this stall's menu: stall name, dishes and prices."},
+    ]
+    who = take_quota(request)
+    try:
+        out = ask_claude(MENU_EXTRACT_SYSTEM, content, MENU_EXTRACT_SCHEMA, effort="low")
+    except Exception:
+        refund_quota(who)
+        raise
+    return {"stall_name": _clean_name(out.get("stall_name", ""), 80), "dishes": stalls.clean_dishes(out.get("dishes"))}
+
+
+# ---------------------------------------------------------------- admin (site owner only)
+# Set ADMIN_PASSWORD on the server (Render > Environment). Without it, the admin tools are off.
+
+_admin_fails = {"hour": None, "by_ip": defaultdict(int)}
+
+
+def require_admin(request: Request) -> None:
+    secret = os.environ.get("ADMIN_PASSWORD", "")
+    if len(secret) < 8:
+        raise HTTPException(503, "Admin is turned off. Set ADMIN_PASSWORD (8+ characters) on the server.")
+    hour, who = int(time.time() // 3600), _visitor(request)
+    with _usage_lock:
+        if _admin_fails["hour"] != hour:
+            _admin_fails.update(hour=hour, by_ip=defaultdict(int))
+        if _admin_fails["by_ip"][who] >= 10:
+            raise HTTPException(429, "Too many wrong passwords. Try again in an hour.")
+    given = request.headers.get("x-admin-password", "")
+    if not hmac.compare_digest(given.encode(), secret.encode()):
+        with _usage_lock:
+            _admin_fails["by_ip"][who] += 1
+        raise HTTPException(401, "Wrong admin password.")
+
+
+class AdminStallEdit(BaseModel):
+    name: str | None = None
+    unit: str | None = None
+    dishes: list[Dish] | None = None
+    hidden: bool | None = None
+
+
+@app.get("/api/admin/check")
+def admin_check(request: Request):
+    require_admin(request)
+    return {"ok": True, "storage": ratings.backend_name()}
+
+
+@app.get("/api/admin/stalls")
+def admin_list(centre_id: str, request: Request):
+    require_admin(request)
+    _known_centre(centre_id)
+    try:
+        rows = stalls.list_stalls(centre_id, include_hidden=True)
+    except stalls.StallsError as e:
+        raise HTTPException(503, str(e))
+    return {"stalls": [{**public_stall(s), "hidden": bool(s.get("hidden"))} for s in rows]}
+
+
+@app.put("/api/admin/stalls/{stall_id}")
+def admin_edit(stall_id: str, body: AdminStallEdit, request: Request):
+    require_admin(request)
+    stall_id = _valid_stall_id(stall_id)
+    fields = {}
+    if body.name is not None:
+        if len(_clean_name(body.name, 80)) < 2:
+            raise HTTPException(400, "Stall name is too short.")
+        fields["name"] = _clean_name(body.name, 80)
+    if body.unit is not None:
+        fields["unit"] = _clean_name(body.unit, 20) or None
+    if body.dishes is not None:
+        fields["dishes"] = stalls.clean_dishes([d.model_dump() for d in body.dishes])
+    if body.hidden is not None:
+        fields["hidden"] = body.hidden
+    try:
+        row = stalls.update_stall(stall_id, fields)
+    except stalls.StallsError as e:
+        raise HTTPException(404, str(e))
+    _stall_counts["at"] = 0
+    return {**public_stall(row), "hidden": bool(row.get("hidden"))}
+
+
+@app.delete("/api/admin/stalls/{stall_id}")
+def admin_delete(stall_id: str, request: Request):
+    require_admin(request)
+    stall_id = _valid_stall_id(stall_id)
+    try:
+        stalls.delete_stall(stall_id)
+    except stalls.StallsError as e:
+        raise HTTPException(503, str(e))
+    _stall_counts["at"] = 0
+    return {"ok": True}
+
+
+@app.get("/admin")
+def admin_page():
+    return FileResponse(BASE / "static" / "admin.html", headers=NO_CACHE)
+
+
 @app.get("/api/locate")
 def locate(q: str):
     hit = sg_data.locate(q[:100])
@@ -467,24 +721,24 @@ def read_menu(request: Request, image: UploadFile = File(...), question: str = F
 
 @app.get("/")
 def index():
-    return FileResponse(BASE / "static" / "index.html")
+    return FileResponse(BASE / "static" / "index.html", headers=NO_CACHE)
 
 
 @app.get("/about")
 def about():
-    return FileResponse(BASE / "static" / "about.html")
+    return FileResponse(BASE / "static" / "about.html", headers=NO_CACHE)
 
 
 @app.get("/creator")
 def creator():
-    return FileResponse(BASE / "static" / "creator.html")
+    return FileResponse(BASE / "static" / "creator.html", headers=NO_CACHE)
 
 
 @app.get("/sponsor")
 def sponsor():
-    return FileResponse(BASE / "static" / "sponsor.html")
+    return FileResponse(BASE / "static" / "sponsor.html", headers=NO_CACHE)
 
 
 @app.get("/static/page.css")
 def page_css():
-    return FileResponse(BASE / "static" / "page.css", media_type="text/css")
+    return FileResponse(BASE / "static" / "page.css", media_type="text/css", headers=NO_CACHE)

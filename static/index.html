@@ -458,6 +458,54 @@
   .cat.now .ic { color: inherit !important; }
   @media (min-width: 900px) { .now-card { margin: 14px 0 0; width: 100%; max-width: 720px; } }
 
+  /* stalls & menus on a hawker page */
+  .stalls-box { margin-top: 18px; }
+  .stalls-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .stalls-head h3 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.03em; }
+  .stalls-head span { font-size: 12px; color: var(--muted); }
+  .stall-search { width: 100%; margin-bottom: 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line);
+                  background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; outline: none; }
+  .stall-search:focus { border-color: var(--ink); }
+  .stall-list { display: grid; gap: 8px; }
+  .stall { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .stall summary { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; list-style: none; }
+  .stall summary::-webkit-details-marker { display: none; }
+  .stall-name { flex: 1; min-width: 0; }
+  .stall-name b { display: block; font-size: 14px; letter-spacing: -.015em; }
+  .stall-name small { color: var(--muted); font-size: 12px; }
+  .stall-meta { font-size: 12px; color: var(--ink-2); font-weight: 600; white-space: nowrap; }
+  .stall .chev { width: 16px; height: 16px; color: var(--muted); transition: transform .15s; }
+  .stall[open] .chev { transform: rotate(180deg); }
+  .dishes { list-style: none; margin: 0; padding: 0 14px 6px; border-top: 1px solid var(--line); }
+  .dishes li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; font-size: 14px; border-bottom: 1px dashed var(--line); }
+  .dishes li:last-child { border-bottom: 0; }
+  .dishes li span { color: var(--ink); }
+  .dishes li b { font-weight: 700; white-space: nowrap; }
+  .add-dishes { margin: 4px 14px 12px; font-size: 13px; }
+  /* add-a-stall form */
+  .scan-fill { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; border: 1.5px dashed var(--line);
+               background: var(--surface); cursor: pointer; margin-bottom: 14px; }
+  .scan-fill input { display: none; }
+  .scan-fill b { display: block; font-size: 14px; }
+  .scan-fill small { display: block; color: var(--muted); font-size: 12px; }
+  .form-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .form-grid label, .dish-head { font-size: 12px; font-weight: 700; color: var(--ink-2); }
+  .form-grid small, .dish-head small { font-weight: 500; color: var(--muted); }
+  .form-grid input, .dish-row input { width: 100%; margin-top: 4px; padding: 10px 12px; border-radius: 11px; border: 1px solid var(--line);
+                                      background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; outline: none; }
+  .form-grid input:focus, .dish-row input:focus { border-color: var(--ink); }
+  .dish-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .dish-head b { color: var(--ink); font-size: 14px; }
+  .dish-row { display: grid; grid-template-columns: 1fr 92px 34px; gap: 6px; align-items: center; }
+  .dish-row input { margin-top: 6px; }
+  .d-price-wrap { display: flex; align-items: center; gap: 2px; margin-top: 6px; padding-left: 10px; border: 1px solid var(--line);
+                  border-radius: 11px; background: var(--surface); color: var(--muted); font-size: 14px; }
+  .d-price-wrap input { margin: 0; border: 0; padding-left: 2px; background: transparent; }
+  .d-del { width: 34px; height: 38px; margin-top: 6px; display: grid; place-items: center; color: var(--muted); border-radius: 10px; }
+  .d-del:hover { background: var(--surface-2); color: var(--ink); }
+  .d-del svg { width: 15px; height: 15px; }
+  #addRow { display: inline-block; margin: 10px 0 4px; font-size: 13px; }
+
   /* logo is a link home */
   a.logo { color: var(--ink); text-decoration: none; }
 
@@ -931,7 +979,7 @@ function centreCard(c) {
                : (c.food_stalls ? `${c.food_stalls} food stalls` : c.address);
   return `<button class="hc" data-id="${esc(c.id)}">${photoEl(c)}
     <div class="info"><h3>${esc(c.name)}</h3><div class="sub">${esc(known)}</div>
-      <div class="metas">${ratingMeta(c)}${travelMeta(c)}${c.distance_km == null && c.food_stalls ? `<span>${icon("store")}${c.food_stalls} stalls</span>` : ""}</div>
+      <div class="metas">${ratingMeta(c)}${travelMeta(c)}${c.distance_km == null && c.food_stalls ? `<span>${icon("store")}${c.food_stalls} stalls</span>` : ""}${c.stall_count ? `<span>${icon("store")}${c.stall_count} menu${c.stall_count === 1 ? "" : "s"}</span>` : ""}</div>
       ${badges(c)}</div></button>`;
 }
 
@@ -1024,14 +1072,118 @@ function openCentre(c, push = true) {
     ${c.description ? `<p class="text">${esc(c.description)}</p>` : ""}
     ${c.nearest_mrt ? `<p class="text">${icon("train", 14)} Nearest MRT: ${esc(c.nearest_mrt)}</p>` : ""}
     ${dirLinks(c)}
+    <div class="stalls-box" id="stallsBox"></div>
     ${socialLinks(c)}
     <div class="rate-box" id="rateBox"></div>
     <button class="wide primary" id="askHere">${icon("sparkle", 18)}What should I eat here?</button>`, (s) => {
     $("#askHere", s).addEventListener("click", () => { closeSheet(true); centrePushed = false; search(`What should I eat at ${c.name}?`, c.name); });
     $("#sheetClose", s).addEventListener("click", () => closeSheet());
     renderRateBox(c, $("#rateBox", s));
+    loadStalls(c, $("#stallsBox", s));
   });
   sheetIsCentre = true;
+}
+
+// ---------- stalls & menus (added by HawkerFit users, tidied by the site owner) ----------
+const money = (p) => p == null ? "" : "$" + Number(p).toFixed(2);
+async function loadStalls(c, el) {
+  el.innerHTML = `<div class="stalls-head"><h3>Stalls &amp; menus</h3></div><div class="sk" style="height:52px"></div>`;
+  let list = [];
+  try {
+    const res = await fetch(`/api/centre/${encodeURIComponent(c.id)}/stalls`);
+    if (!res.ok) throw new Error(await readError(res));
+    list = (await res.json()).stalls;
+  } catch (e) { el.innerHTML = `<div class="stalls-head"><h3>Stalls &amp; menus</h3></div><p class="text">${esc(e.message || "Couldn't load stalls right now.")}</p>`; return; }
+  const stallHtml = (s) => {
+    const priced = s.dishes.filter(d => d.price != null).map(d => d.price);
+    const from = priced.length ? `from ${money(Math.min(...priced))}` : "";
+    return `<details class="stall" data-name="${esc(s.name.toLowerCase())} ${esc(s.dishes.map(d => d.name.toLowerCase()).join(" "))}">
+      <summary><span class="stall-name"><b>${esc(s.name)}</b>${s.unit ? `<small>${esc(s.unit)}</small>` : ""}</span>
+        <span class="stall-meta">${s.dishes.length} dish${s.dishes.length === 1 ? "" : "es"}${from ? ` · ${from}` : ""}</span>
+        <svg class="chev"><use href="#i-chev"/></svg></summary>
+      <ul class="dishes">${s.dishes.map(d => `<li><span>${esc(d.name)}</span><b>${money(d.price) || "—"}</b></li>`).join("")}</ul>
+      <button class="link add-dishes" data-id="${esc(s.id)}">+ Add or update dishes</button>
+    </details>`;
+  };
+  el.innerHTML = `
+    <div class="stalls-head"><h3>Stalls &amp; menus</h3>${list.length ? `<span>${list.length} listed</span>` : ""}</div>
+    ${list.length > 6 ? `<input class="stall-search" placeholder="Search stalls or dishes" aria-label="Search stalls or dishes">` : ""}
+    ${list.length ? `<div class="stall-list">${list.map(stallHtml).join("")}</div>`
+      : `<p class="text">No stalls listed here yet. Know a good one? Snap a photo of its menu and we'll fill in the dishes and prices.</p>`}
+    <button class="wide ghost" id="addStallBtn">${icon("camera", 18)}Add a stall</button>
+    <p class="disclaim">Added by HawkerFit users. Prices can change, so check at the stall.</p>`;
+  el.querySelector(".stall-search")?.addEventListener("input", e => {
+    const q = e.target.value.trim().toLowerCase();
+    el.querySelectorAll(".stall").forEach(d => d.classList.toggle("hidden", !!q && !d.dataset.name.includes(q)));
+  });
+  $("#addStallBtn", el).addEventListener("click", () => openStallForm(c));
+  el.querySelectorAll(".add-dishes").forEach(b => b.addEventListener("click", () => openStallForm(c, list.find(s => s.id === b.dataset.id))));
+}
+
+// Add a new stall, or add/update dishes on an existing one (existing = stall object)
+function openStallForm(c, existing = null) {
+  const row = (d = {}) => `<div class="dish-row">
+      <input class="d-name" placeholder="Dish, e.g. Chicken rice" maxlength="60" value="${esc(d.name || "")}">
+      <span class="d-price-wrap">$<input class="d-price" inputmode="decimal" placeholder="0.00" value="${d.price != null ? esc(d.price) : ""}"></span>
+      <button class="d-del" type="button" aria-label="Remove dish"><svg><use href="#i-x"/></svg></button></div>`;
+  openSheet(`
+    <h2>${existing ? `Update ${esc(existing.name)}` : "Add a stall"}</h2>
+    <p class="sub2">${esc(c.name)}</p>
+    <label class="scan-fill"><input type="file" id="menuPhoto" accept="image/jpeg,image/png,image/webp,image/gif">
+      ${icon("camera", 20)}<span><b>Snap the menu board</b><small>We'll read the dishes and prices for you</small></span></label>
+    ${existing ? "" : `
+    <div class="form-grid">
+      <label>Stall name<input id="stName" maxlength="80" placeholder="e.g. Ah Seng Chicken Rice"></label>
+      <label>Unit no. <small>(optional)</small><input id="stUnit" maxlength="20" placeholder="#01-23"></label>
+    </div>`}
+    <div class="dish-head"><b>Dishes &amp; prices</b><small>Leave price empty if you're not sure</small></div>
+    <div id="dishRows">${row()}${row()}</div>
+    <button class="link" id="addRow" type="button">+ Add another dish</button>
+    <button class="wide primary" id="saveStall">${existing ? "Save dishes" : "Add stall"}</button>
+    <button class="wide ghost" id="cancelStall">Cancel</button>`, (s) => {
+    const rows = $("#dishRows", s);
+    const bindRows = () => rows.querySelectorAll(".d-del").forEach(b => b.onclick = () => { b.closest(".dish-row").remove(); if (!rows.children.length) rows.insertAdjacentHTML("beforeend", row()); });
+    bindRows();
+    $("#addRow", s).addEventListener("click", () => { rows.insertAdjacentHTML("beforeend", row()); bindRows(); rows.lastElementChild.querySelector(".d-name").focus(); });
+    $("#cancelStall", s).addEventListener("click", () => openCentre(c, false));
+    $("#menuPhoto", s).addEventListener("change", async e => {
+      const f = e.target.files[0]; if (!f) return;
+      const label = $(".scan-fill span", s); const old = label.innerHTML;
+      label.innerHTML = `<b>Reading the menu…</b><small>This takes a few seconds</small>`;
+      try {
+        const form = new FormData(); form.append("image", f);
+        const res = await fetch("/api/menu-extract", { method: "POST", body: form });
+        if (!res.ok) throw new Error(await readError(res));
+        const out = await res.json();
+        if (!out.dishes.length) throw new Error("Couldn't find any dishes in that photo. Try a clearer, closer shot.");
+        if (!existing && out.stall_name && !$("#stName", s).value) $("#stName", s).value = out.stall_name;
+        const filled = [...rows.querySelectorAll(".dish-row")].filter(r => r.querySelector(".d-name").value.trim());
+        rows.innerHTML = filled.map(r => r.outerHTML).join("") + out.dishes.map(row).join("");
+        bindRows();
+        toast(`Found ${out.dishes.length} dishes. Check them, then save.`);
+      } catch (err) { toast(err.message || "Couldn't read that photo."); }
+      finally { label.innerHTML = old; e.target.value = ""; }
+    });
+    $("#saveStall", s).addEventListener("click", async () => {
+      const dishes = [...rows.querySelectorAll(".dish-row")].map(r => ({
+        name: r.querySelector(".d-name").value.trim(),
+        price: r.querySelector(".d-price").value.trim() === "" ? null : Number(r.querySelector(".d-price").value.replace(/[^0-9.]/g, "")),
+      })).filter(d => d.name);
+      if (!dishes.length) return toast("Add at least one dish.");
+      const btn = $("#saveStall", s); btn.disabled = true;
+      try {
+        const res = existing
+          ? await fetch(`/api/stalls/${existing.id}/dishes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ dishes }) })
+          : await fetch(`/api/centre/${encodeURIComponent(c.id)}/stalls`, { method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: $("#stName", s).value.trim(), unit: $("#stUnit", s).value.trim() || null, dishes }) });
+        if (!res.ok) throw new Error(await readError(res));
+        toast(existing ? "Thanks! Dishes updated." : "Thanks! The stall is now listed.");
+        c.stall_count = (c.stall_count || 0) + (existing ? 0 : 1);
+        openCentre(c, false);
+      } catch (err) { toast(err.message); btn.disabled = false; }
+    });
+  });
+  sheetIsCentre = true;   // still "inside" this hawker centre's page for back/reload purposes
 }
 
 // ---------- food reviews on social media (search links, nothing is scraped) ----------
