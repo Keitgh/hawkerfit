@@ -441,6 +441,85 @@
   .nav button[aria-current="page"] svg { stroke-width: 2.2; }
   .toast { background: var(--cta); color: var(--on-cta); border-radius: 14px; font-weight: 500; }
   .foot { padding: 28px 28px 0; line-height: 1.7; }
+  /* logo is a link home */
+  a.logo { color: var(--ink); text-decoration: none; }
+
+  /* location: an obvious pill in the header, and a big card until it's set */
+  .loc-pill { display: inline-flex; align-items: center; gap: 6px; max-width: 180px; padding: 8px 14px; border-radius: 999px;
+              background: var(--cta); color: var(--on-cta); font-size: 13px; font-weight: 700; }
+  .loc-pill span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .loc-pill svg { width: 15px; height: 15px; }
+  .loc-pill.set { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  .loc-card { margin: 18px 20px 0; padding: 18px; border-radius: 20px; background: var(--surface); border: 1.5px solid var(--ink); }
+  .loc-card-head { display: flex; gap: 12px; align-items: flex-start; }
+  .loc-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--cta); color: var(--on-cta); display: grid; place-items: center; flex-shrink: 0; }
+  .loc-card h2 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.03em; }
+  .loc-card p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .loc-form { display: flex; gap: 8px; margin-top: 14px; padding: 4px 4px 4px 12px; border-radius: 13px; background: var(--surface-2); }
+  .loc-form input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; color: var(--ink); padding: 9px 0; }
+  .gps-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 8px; padding: 11px;
+             border-radius: 12px; border: 1px solid var(--line); font-weight: 700; font-size: 14px; }
+  .gps-btn svg { width: 18px; height: 18px; }
+
+  /* filter buttons + menus that match the app instead of the phone's dropdowns */
+  .fbtn { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; padding: 7px 10px 7px 13px; border-radius: 999px;
+          border: 1px solid var(--line); background: var(--surface); font-size: 13px; font-weight: 600; color: var(--ink); }
+  .fbtn .chev { width: 14px; height: 14px; color: var(--muted); transition: transform .15s; }
+  .fbtn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  .fbtn.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .fbtn.on .chev { color: inherit; }
+  .menu { position: absolute; z-index: 60; min-width: 190px; padding: 6px; border-radius: 14px; background: var(--surface);
+          border: 1px solid var(--line); box-shadow: 0 12px 32px rgba(0,0,0,.14); animation: pop .12s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
+  .menu button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 10px 12px;
+                 border-radius: 9px; font-size: 14px; font-weight: 500; text-align: left; white-space: pre; }
+  .menu button:hover, .menu button:focus-visible { background: var(--surface-2); outline: none; }
+  .menu button[aria-checked="true"] { font-weight: 700; }
+  .menu svg { width: 16px; height: 16px; }
+
+  /* close button on hawker pages */
+  .sheet { position: relative; }
+  .sheet-close { position: absolute; top: 14px; right: 14px; z-index: 2; width: 34px; height: 34px; border-radius: 50%;
+                 display: grid; place-items: center; background: color-mix(in srgb, var(--surface) 85%, transparent);
+                 backdrop-filter: blur(8px); border: 1px solid var(--line); color: var(--ink); }
+  .sheet-close svg { width: 16px; height: 16px; }
+  .sheet-close + .detail-photo { margin-top: 0; }
+
+  /* ---------- bigger screens: a real desktop layout, not a stretched phone ---------- */
+  @media (min-width: 900px) {
+    .app { max-width: 1120px; box-shadow: none; padding: 0 24px 64px; }
+    .hero { padding: 24px 0 4px; }
+    .hero h1 { font-size: 52px; margin-top: 44px; }
+    .search { margin: 24px 0 0; max-width: 720px; }
+    .loc-card { margin: 20px 0 0; max-width: 720px; padding: 22px; }
+    .quick-row { max-width: 720px; }
+    .spin-card { margin: 12px 0 0; width: 100%; }
+    .sec-head, .cats, .filters, .centres, #results, .pad { padding-left: 0; padding-right: 0; }
+    section.block { margin-top: 32px; }
+    .centres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .hc { padding: 12px; }
+    .photo { width: 112px !important; height: 112px !important; }
+    #results { max-width: 1120px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; align-items: start; }
+    #results > .res-head, #results > .lead, #results > .note { grid-column: 1 / -1; }
+    .support-card { margin: 36px 0 0; max-width: 720px; }
+    .foot { text-align: left; padding: 28px 0 0; }
+    /* top navigation pill instead of a bottom tab bar */
+    .nav { top: 18px; bottom: auto; left: 50%; width: auto; height: 44px; padding: 4px; gap: 4px; border-radius: 999px;
+           border: 1px solid var(--line); }
+    .nav button { flex-direction: row; gap: 7px; padding: 0 16px; border-radius: 999px; font-size: 13px; }
+    .nav button svg { width: 18px; height: 18px; }
+    .nav button[aria-current="page"] { background: var(--surface-2); }
+    .toast { bottom: 28px; }
+    /* sheets become centred dialogs */
+    .scrim { align-items: center; padding: 24px; }
+    .sheet { max-width: 600px; border-radius: 24px; max-height: 88vh; padding: 20px 24px 24px; }
+    .grab { display: none; }
+    .detail-photo { height: 260px; }
+    .page-title, .upload, .label { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
+    #view-scan { max-width: 720px; }
+  }
+  @media (min-width: 1200px) { .centres { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
   .support-card { display: flex; align-items: center; gap: 12px; margin: 28px 20px 0; padding: 14px; border-radius: 16px;
                   background: var(--surface); border: 1px solid var(--line); text-decoration: none; color: var(--ink); }
   .support-card .cup { width: 38px; height: 38px; border-radius: 11px; background: var(--surface-2); display: grid;
@@ -464,6 +543,9 @@
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></symbol>
   <symbol id="i-train" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M9 21l-2-4M15 21l2-4"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
   <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 3c0 1.5 1 1.5 1 3M12 3c0 1.5 1 1.5 1 3"/></symbol>
   <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11"/></symbol>
   <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.8-2.5h6.4L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></symbol>
@@ -487,15 +569,14 @@
   <div id="view-home">
     <header class="hero">
       <div class="topbar">
-        <div class="logo"><span class="mark"><svg><use href="#i-bowl"/></svg></span><span>hawker<em>fit</em></span></div>
+        <a class="logo" href="/" id="homeLink" aria-label="HawkerFit home"><span class="mark"><svg><use href="#i-bowl"/></svg></span><span>hawker<em>fit</em></span></a>
         <div class="top-actions">
-          <button class="chip-btn" id="locBtn"><svg><use href="#i-pin"/></svg><span id="locLabel">Set location</span></button>
+          <button class="loc-pill" id="locBtn"><svg><use href="#i-pin"/></svg><span id="locLabel">Set location</span></button>
           <button class="icon-btn" id="themeBtn" title="Theme: system"><svg><use href="#i-theme"/></svg></button>
           <a class="icon-btn" href="/about" title="About HawkerFit" aria-label="About HawkerFit"><svg><use href="#i-info"/></svg></a>
         </div>
       </div>
       <h1><span id="greet">Good evening</span>,<br>what's for makan?</h1>
-      <div class="weather" id="weather"></div>
     </header>
 
     <form class="search" id="searchForm">
@@ -505,26 +586,34 @@
     </form>
 
     <div id="discover">
-      <button class="spin-card" id="spinOpen">
-        <span class="mini"></span>
-        <span><b>Can't decide? Spin for it</b><small>We'll pick an open hawker centre near you</small></span>
-      </button>
+      <!-- shown until we know where the user is -->
+      <section class="loc-card hidden" id="locCard">
+        <div class="loc-card-head">
+          <span class="loc-ic"><svg><use href="#i-pin"/></svg></span>
+          <div><h2>Where are you?</h2><p>We'll show the hawker centres closest to you.</p></div>
+        </div>
+        <form class="loc-form" id="locInlineForm">
+          <input id="locInlineInput" placeholder="Postal code, area or hawker centre" autocomplete="off" maxlength="100" aria-label="Postal code, area or hawker centre">
+          <button class="go" type="submit">Find</button>
+        </form>
+        <button class="gps-btn" id="locInlineGps" type="button"><svg><use href="#i-gps"/></svg>Use my current location</button>
+      </section>
+
+      <div class="quick-row">
+        <button class="spin-card" id="spinOpen">
+          <span class="mini"></span>
+          <span><b>Can't decide? Spin for it</b><small>We'll pick an open hawker centre near you</small></span>
+        </button>
+      </div>
 
       <section class="block"><div class="cats" id="cats"></div></section>
 
-      <section class="block">
+      <section class="block" id="listSection">
         <div class="sec-head"><h2 id="listTitle">Hawker centres</h2><span id="listSub"></span></div>
         <div class="filters" role="group" aria-label="Filters">
-          <select id="fRadius" class="fsel" aria-label="Distance">
-            <option value="0">Any distance</option><option value="0.5">Within 500 m</option><option value="1">Within 1 km</option>
-            <option value="2">Within 2 km</option><option value="5">Within 5 km</option><option value="10">Within 10 km</option>
-          </select>
-          <select id="fRating" class="fsel" aria-label="Minimum rating">
-            <option value="0">Any rating</option><option value="3">★ 3.0+</option><option value="4">★ 4.0+</option><option value="4.5">★ 4.5+</option>
-          </select>
-          <select id="fPrice" class="fsel" aria-label="Price">
-            <option value="0">Any price</option><option value="1">$ Under $5</option><option value="2">$$ $5 - $8</option><option value="3">$$$ Over $8</option>
-          </select>
+          <button class="fbtn" id="fRadius" data-f="radius" aria-haspopup="menu"></button>
+          <button class="fbtn" id="fRating" data-f="rating" aria-haspopup="menu"></button>
+          <button class="fbtn" id="fPrice" data-f="price" aria-haspopup="menu"></button>
           <button class="fclear hidden" id="fClear">Clear</button>
         </div>
         <div class="centres" id="centres">
@@ -620,63 +709,126 @@ $("#themeBtn").addEventListener("click", () => {
 const hr = new Date().getHours();
 $("#greet").textContent = hr < 5 ? "Still awake" : hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
 
-// ---------- nav ----------
+// ---------- views + routes (the address bar remembers where you are, so reloading keeps it) ----------
+//   #scan            -> Scan tab
+//   #results         -> last AI search results (saved for this tab, so a reload costs nothing)
+//   #centre=<id>     -> a hawker centre's page
+const session = { get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch { return null; } },
+                  set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+function showView(view) {
+  document.querySelectorAll(".nav button").forEach(x =>
+    x.dataset.view === view ? x.setAttribute("aria-current", "page") : x.removeAttribute("aria-current"));
+  $("#view-home").classList.toggle("hidden", view !== "home");
+  $("#view-scan").classList.toggle("hidden", view !== "scan");
+}
+function currentRoute() { return decodeURIComponent(location.hash.slice(1)); }
+function setRoute(route, push = true) {
+  const url = location.pathname + location.search + (route ? "#" + encodeURIComponent(route).replace(/%3D/g, "=") : "");
+  if (url === location.pathname + location.search + location.hash) return;
+  history[push ? "pushState" : "replaceState"](null, "", url);
+}
 document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => {
-  document.querySelectorAll(".nav button").forEach(x => x.removeAttribute("aria-current"));
-  b.setAttribute("aria-current", "page");
-  $("#view-home").classList.toggle("hidden", b.dataset.view !== "home");
-  $("#view-scan").classList.toggle("hidden", b.dataset.view !== "scan");
-  window.scrollTo({ top: 0 });
+  closeSheet(true); showView(b.dataset.view); window.scrollTo({ top: 0 });
+  setRoute(b.dataset.view === "scan" ? "scan" : ($("#results").innerHTML ? "results" : ""));
 }));
+function goHome() {
+  closeSheet(true); showView("home"); $("#query").value = ""; session.set("hf-results", null); resetHome();
+  setRoute(""); window.scrollTo({ top: 0, behavior: "smooth" });
+}
+$("#homeLink").addEventListener("click", e => { e.preventDefault(); goHome(); });
+
+function applyRoute() {
+  const r = currentRoute();
+  closeSheet(true);
+  if (r === "scan") { showView("scan"); return; }
+  showView("home");
+  const saved = session.get("hf-results");
+  if ((r === "results" || r.startsWith("centre=")) && saved && !$("#results").innerHTML) {
+    $("#query").value = saved.query; $("#discover").classList.add("hidden"); renderFood(saved.data, saved.title);
+  } else if (!r) { resetHome(); }
+  if (r.startsWith("centre=")) {
+    const c = byId[r.slice(7)] || (saved?.data?.picks || []).map(p => p.centre).find(x => x.id === r.slice(7));
+    if (c) openCentre(c, false);
+  }
+}
+window.addEventListener("popstate", applyRoute);
 
 // ---------- sheets ----------
+let sheetIsCentre = false, centrePushed = false;
 function openSheet(html, onMount) {
   const host = $("#sheetHost");
   host.innerHTML = `<div class="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div></div>`;
   const scrim = $(".scrim", host);
   scrim.addEventListener("click", e => { if (e.target === scrim) closeSheet(); });
   document.body.style.overflow = "hidden";
+  sheetIsCentre = false;
   onMount && onMount($(".sheet", host));
 }
-function closeSheet() { $("#sheetHost").innerHTML = ""; document.body.style.overflow = ""; }
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+// silent = just remove it (used when the address bar already changed)
+function closeSheet(silent = false) {
+  const wasCentre = sheetIsCentre && currentRoute().startsWith("centre=");
+  $("#sheetHost").innerHTML = ""; document.body.style.overflow = ""; sheetIsCentre = false;
+  if (!silent && wasCentre) {
+    if (centrePushed) history.back();
+    else setRoute(session.get("hf-results") && $("#results").innerHTML ? "results" : "", false);
+    centrePushed = false;
+  }
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeMenus(); closeSheet(); } });
 
 // ---------- location ----------
 let loc = null; // {lat, lng, label}
 try { loc = JSON.parse(store.get("hf-loc")) || null; } catch {}
 function setLoc(l) {
   loc = l; store.set("hf-loc", l ? JSON.stringify(l) : null);
-  $("#locLabel").textContent = l ? l.label : "Set location";
-  loadCentres();
+  updateLocUI(); loadCentres();
 }
-$("#locLabel").textContent = loc ? loc.label : "Set location";
+// Until we know where the user is, show a big "Where are you?" card instead of a random list.
+function updateLocUI() {
+  $("#locLabel").textContent = loc ? loc.label : "Set location";
+  $("#locBtn").classList.toggle("set", !!loc);
+  $("#locCard").classList.toggle("hidden", !!loc);
+  $("#listSection").classList.toggle("hidden", !loc);
+}
+async function findPlace(q) {
+  if (!q) return false;
+  const res = await fetch("/api/locate?q=" + encodeURIComponent(q));
+  if (!res.ok) { toast(await readError(res)); return false; }
+  const hit = await res.json();
+  setLoc({ lat: hit.lat, lng: hit.lng, label: hit.label.replace(/ \(postal.*\)/, "") });
+  if (hit.approx) toast(`Showing hawker centres around ${hit.label.replace(/ \(postal.*\)/, "")}`);
+  return true;
+}
+function useGps(btn, done) {
+  if (!navigator.geolocation) return toast("Location isn't available on this device. Try a postal code.");
+  const old = btn.innerHTML; btn.textContent = "Locating…"; btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    p => { btn.innerHTML = old; btn.disabled = false; setLoc({ lat: p.coords.latitude, lng: p.coords.longitude, label: "Near you" }); done && done(); },
+    () => { btn.innerHTML = old; btn.disabled = false; toast("Couldn't get your location. Try a postal code instead."); },
+    { timeout: 8000 });
+}
+$("#locInlineForm").addEventListener("submit", async e => { e.preventDefault(); await findPlace($("#locInlineInput").value.trim()); });
+$("#locInlineGps").addEventListener("click", e => useGps(e.currentTarget));
+updateLocUI();
 
-$("#locBtn").addEventListener("click", () => openSheet(`
-  <h2>Where are you?</h2>
-  <p class="sub2">We use this to sort hawker centres, check rain nearby and estimate travel times.</p>
+$("#locBtn").addEventListener("click", () => {
+  if (!loc) {  // the big card is already on the home screen: just jump to it
+    goHome(); setTimeout(() => { $("#locCard").scrollIntoView({ behavior: "smooth", block: "center" }); $("#locInlineInput").focus(); }, 50);
+    return;
+  }
+  openSheet(`
+  <h2>Change location</h2>
+  <p class="sub2">We use this to sort hawker centres and estimate travel times.</p>
   <form class="field" id="locForm"><input id="locInput" placeholder="Postal code, area or hawker centre" autocomplete="off" maxlength="100">
     <button class="go" type="submit">Find</button></form>
   <button class="wide ghost" id="gpsBtn">${icon("gps", 18)}Use my current location</button>
-  ${loc ? `<button class="wide ghost" id="clearLoc" style="color:var(--muted)">Clear location</button>` : ""}`, (s) => {
-  $("#locInput", s).focus();
-  $("#locForm", s).addEventListener("submit", async e => {
-    e.preventDefault();
-    const q = $("#locInput", s).value.trim(); if (!q) return;
-    const res = await fetch("/api/locate?q=" + encodeURIComponent(q));
-    if (!res.ok) return toast(await readError(res));
-    const hit = await res.json(); closeSheet(); setLoc({ lat: hit.lat, lng: hit.lng, label: hit.label.replace(/ \(postal.*\)/, "") });
-    if (hit.approx) toast(`Using approximate location: ${hit.label}`);
+  <button class="wide ghost" id="clearLoc" style="color:var(--muted)">Clear location</button>`, (s) => {
+    $("#locInput", s).focus();
+    $("#locForm", s).addEventListener("submit", async e => { e.preventDefault(); if (await findPlace($("#locInput", s).value.trim())) closeSheet(); });
+    $("#gpsBtn", s).addEventListener("click", e => useGps(e.currentTarget, () => closeSheet()));
+    $("#clearLoc", s).addEventListener("click", () => { closeSheet(); setLoc(null); });
   });
-  $("#gpsBtn", s).addEventListener("click", () => {
-    if (!navigator.geolocation) return toast("Location isn't available on this device.");
-    $("#gpsBtn", s).textContent = "Locating…";
-    navigator.geolocation.getCurrentPosition(
-      p => { closeSheet(); setLoc({ lat: p.coords.latitude, lng: p.coords.longitude, label: "Near you" }); },
-      () => { $("#gpsBtn", s).innerHTML = `${icon("gps", 18)}Use my current location`; toast("Couldn't get your location. Try a postal code instead."); },
-      { timeout: 8000 });
-  });
-  $("#clearLoc", s)?.addEventListener("click", () => { closeSheet(); setLoc(null); });
-}));
+});
 
 // ---------- centres + weather ----------
 let centres = [], shown = 10, byId = {};
@@ -686,29 +838,14 @@ async function loadCentres() {
     const res = await fetch("/api/centres" + qs);
     const data = await res.json();
     centres = data.centres; byId = Object.fromEntries(centres.map(c => [c.id, c]));
-    shown = 10; renderCentres(); renderWeather(data);
+    shown = 10; renderCentres();
   } catch { $("#centres").innerHTML = `<div class="note">${icon("info")}<span>Couldn't load hawker centres. Is the server running?</span></div>`; }
-}
-
-function renderWeather(data) {
-  const el = $("#weather");
-  let w = null;
-  if (loc && centres[0]) w = centres[0].weather;
-  if (!w) {
-    const rainy = centres.filter(c => c.weather?.rainy).length;
-    el.className = "weather" + (rainy ? " rainy" : "");
-    el.innerHTML = centres.length ? `${icon(rainy ? "rain" : "cloud")}<span>${rainy ? `Rain expected at ${rainy} hawker centres right now` : "Dry across Singapore right now"}${data.weather_period ? ` · ${esc(data.weather_period)}` : ""}</span>` : "";
-    return;
-  }
-  el.className = "weather" + (w.rainy ? " rainy" : "");
-  el.innerHTML = `${icon(w.rainy ? "rain" : "cloud")}<span>${esc(w.forecast)} in ${esc(w.area)}${data.weather_period ? ` · ${esc(data.weather_period)}` : ""}</span>`;
 }
 
 function badges(c) {
   const b = [];
   if (c.closed_today) b.push(`<span class="badge b-closed">${icon("closed")}Closed today</span>`);
   else if (c.closure_note) b.push(`<span class="badge b-soon">${esc(c.closure_note)}</span>`);
-  if (c.weather?.rainy) b.push(`<span class="badge b-rain">${icon("rain")}${esc(c.weather.forecast)}</span>`);
   if (c.open_late) b.push(`<span class="badge b-late">${icon("moon")}Supper spot</span>`);
   return b.length ? `<div class="badges">${b.join("")}</div>` : "";
 }
@@ -742,18 +879,44 @@ function passesFilters(c) {
   if (filters.price && c.price !== filters.price) return false;
   return true;
 }
+// Custom menus (instead of the phone's built-in dropdowns) so they match the rest of the app.
+const FILTER_OPTIONS = {
+  radius: [[0, "Any distance"], [0.5, "Within 500 m"], [1, "Within 1 km"], [2, "Within 2 km"], [5, "Within 5 km"], [10, "Within 10 km"]],
+  rating: [[0, "Any rating"], [3, "★ 3.0 and up"], [4, "★ 4.0 and up"], [4.5, "★ 4.5 and up"]],
+  price: [[0, "Any price"], [1, "$  Under $5"], [2, "$$  $5 - $8"], [3, "$$$  Over $8"]],
+};
+const FILTER_SHORT = { radius: { 0: "Distance" }, rating: { 0: "Rating" }, price: { 0: "Price" } };
+const fBtn = { radius: $("#fRadius"), rating: $("#fRating"), price: $("#fPrice") };
 function syncFilterUI() {
-  $("#fRadius").value = String(filters.radius); $("#fRating").value = String(filters.rating); $("#fPrice").value = String(filters.price);
-  ["fRadius", "fRating", "fPrice"].forEach(id => $("#" + id).classList.toggle("on", $("#" + id).value !== "0"));
+  for (const k of Object.keys(fBtn)) {
+    const v = filters[k], label = v ? FILTER_OPTIONS[k].find(o => o[0] === v)?.[1].replace(/\s+/g, " ") : FILTER_SHORT[k][0];
+    fBtn[k].innerHTML = `<span>${esc(label)}</span><svg class="chev"><use href="#i-chev"/></svg>`;
+    fBtn[k].classList.toggle("on", !!v);
+  }
   $("#fClear").classList.toggle("hidden", !(filters.radius || filters.rating || filters.price));
 }
 function setFilter(k, v) {
-  if (k === "radius" && v && !loc) { toast("Set your location first to filter by distance."); $("#locBtn").click(); v = 0; }
   filters[k] = v; store.set("hf-filters", JSON.stringify(filters)); shown = 10; syncFilterUI(); renderCentres();
 }
-$("#fRadius").addEventListener("change", e => setFilter("radius", Number(e.target.value)));
-$("#fRating").addEventListener("change", e => setFilter("rating", Number(e.target.value)));
-$("#fPrice").addEventListener("change", e => setFilter("price", Number(e.target.value)));
+function closeMenus() { document.querySelectorAll(".menu").forEach(m => m.remove()); document.querySelectorAll(".fbtn[aria-expanded]").forEach(b => b.removeAttribute("aria-expanded")); }
+function openMenu(btn) {
+  const k = btn.dataset.f, wasOpen = btn.getAttribute("aria-expanded") === "true";
+  closeMenus(); if (wasOpen) return;
+  const menu = document.createElement("div");
+  menu.className = "menu"; menu.setAttribute("role", "menu");
+  menu.innerHTML = FILTER_OPTIONS[k].map(([v, l]) =>
+    `<button role="menuitemradio" aria-checked="${filters[k] === v}" data-v="${v}">${esc(l)}${filters[k] === v ? `<svg><use href="#i-check"/></svg>` : ""}</button>`).join("");
+  document.body.appendChild(menu);
+  const r = btn.getBoundingClientRect();
+  menu.style.top = `${r.bottom + window.scrollY + 6}px`;
+  menu.style.left = `${Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - menu.offsetWidth - 12)}px`;
+  btn.setAttribute("aria-expanded", "true");
+  menu.querySelectorAll("button").forEach(b => b.addEventListener("click", () => { closeMenus(); setFilter(k, Number(b.dataset.v)); }));
+  menu.querySelector('[aria-checked="true"]')?.focus();
+}
+Object.values(fBtn).forEach(b => b.addEventListener("click", e => { e.stopPropagation(); openMenu(b); }));
+document.addEventListener("click", e => { if (!e.target.closest(".menu")) closeMenus(); });
+window.addEventListener("resize", closeMenus);
 $("#fClear").addEventListener("click", () => { filters = { radius: 0, rating: 0, price: 0 }; store.set("hf-filters", null); shown = 10; syncFilterUI(); renderCentres(); });
 syncFilterUI();
 
@@ -778,9 +941,11 @@ function dirLinks(c) {
     <a href="${base}transit" target="_blank" rel="noopener">${icon("bus")}Transit</a>
     <a href="${base}driving" target="_blank" rel="noopener">${icon("car")}Drive${c.drive_min ? ` · ~${c.drive_min}m` : ""}</a></div>`;
 }
-function openCentre(c) {
+function openCentre(c, push = true) {
   if (!c) return;
+  if (push) { setRoute("centre=" + c.id, true); centrePushed = true; }
   openSheet(`
+    <button class="sheet-close" id="sheetClose" aria-label="Close"><svg><use href="#i-x"/></svg></button>
     ${c.photo ? `<img class="detail-photo" src="${esc(c.photo)}" alt="" onerror="this.remove()">` : ""}
     <h2 style="margin-top:12px">${esc(c.name)}</h2>
     <p class="sub2">${esc(c.address)}</p>
@@ -788,7 +953,7 @@ function openCentre(c) {
     <div class="facts">
       <div class="fact"><b>${c.food_stalls ?? "—"}</b><small>food stalls</small></div>
       <div class="fact"><b>${c.distance_km != null ? c.distance_km + " km" : "—"}</b><small>away</small></div>
-      <div class="fact"><b>${c.weather ? (c.weather.rainy ? "Rain" : "Dry") : "—"}</b><small>next 2 hrs</small></div>
+      <div class="fact"><b>${c.rating != null ? `<span style="color:var(--star)">★</span> ${c.rating.toFixed(1)}` : "New"}</b><small>${c.rating != null ? `${c.rating_count} ratings` : "rating"}</small></div>
     </div>
     ${c.known_for?.length ? `<div class="pills" style="margin-bottom:10px">${c.known_for.map(k => `<span class="pill">${esc(k)}</span>`).join("")}</div>` : ""}
     ${c.description ? `<p class="text">${esc(c.description)}</p>` : ""}
@@ -797,9 +962,11 @@ function openCentre(c) {
     ${socialLinks(c)}
     <div class="rate-box" id="rateBox"></div>
     <button class="wide primary" id="askHere">${icon("sparkle", 18)}What should I eat here?</button>`, (s) => {
-    $("#askHere", s).addEventListener("click", () => { closeSheet(); search(`What should I eat at ${c.name}?`, c.name); });
+    $("#askHere", s).addEventListener("click", () => { closeSheet(true); centrePushed = false; search(`What should I eat at ${c.name}?`, c.name); });
+    $("#sheetClose", s).addEventListener("click", () => closeSheet());
     renderRateBox(c, $("#rateBox", s));
   });
+  sheetIsCentre = true;
 }
 
 // ---------- food reviews on social media (search links, nothing is scraped) ----------
@@ -828,6 +995,7 @@ function renderRateBox(c, el) {
   const mine = myVotes()[c.id] || {};
   const summary = c.rating != null
     ? `<div class="rate-avg"><b><span style="color:var(--star)">★</span> ${c.rating.toFixed(1)}</b><span>${c.rating_count} rating${c.rating_count === 1 ? "" : "s"}${c.price_label ? ` · typical meal ${esc(c.price_label)}` : ""}</span></div>`
+    : c.rating_count ? `<div class="rate-avg"><span>${c.rating_count} rating${c.rating_count === 1 ? "" : "s"} so far. The score appears once 3 people have rated.</span></div>`
     : `<div class="rate-avg"><span>No ratings yet. Be the first!</span></div>`;
   el.innerHTML = `<h3>Rate this hawker centre</h3>${summary}
     <div class="star-row" role="radiogroup" aria-label="Your rating">${[1, 2, 3, 4, 5].map(n =>
@@ -888,6 +1056,7 @@ function drawWheel(canvas, pool) {
 }
 function openSpin() {
   if (!centres.length) return toast("Hawker centres are still loading.");
+  if (!loc) { toast("Set your location first, so we spin places near you."); $("#locBtn").click(); return; }
   openSheet(`
     <h2>Spin for your makan</h2>
     <p class="sub2">${loc ? `Open hawker centres near ${esc(loc.label)}` : "Set a location to spin only nearby places"}. Closed-for-cleaning centres are left out.</p>
@@ -951,7 +1120,7 @@ const CATS = [
   ["Breakfast", "sun", "#fefce8", "#ca8a04", "Classic local breakfast"],
   ["Must-try", "star", "#fdf2f8", "#db2777", "Must-try dishes for a first-timer"],
   ["Vegetarian", "leaf", "#f0fdf4", "#16a34a", "Vegetarian-friendly hawker food"],
-  ["Rainy day", "rain", "#e0f2fe", "#0369a1", "Comfort food somewhere I can stay dry, close to me"],
+  ["Family", "store", "#f5f5f4", "#57534e", "Family-friendly hawker centre with lots of choice for everyone"],
 ];
 $("#cats").innerHTML = CATS.map(([label, ic, bg, fg], i) =>
   `<button class="cat" data-i="${i}"><span class="ic" style="background:${bg};color:${fg}">${icon(ic)}</span>${label}</button>`).join("");
@@ -974,7 +1143,10 @@ async function search(query, title) {
     const res = await fetch("/api/recommend", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, ...(loc ? { lat: loc.lat, lng: loc.lng } : {}) }) });
     if (!res.ok) { toast(await readError(res)); return resetHome(); }
-    renderFood(await res.json(), title);
+    const data = await res.json();
+    session.set("hf-results", { query, title: title || null, data });  // lets a reload show this again for free
+    renderFood(data, title);
+    setRoute("results", currentRoute() !== "results");
   } catch { toast("Can't connect right now. Check that the server is running."); resetHome(); }
   finally { busy = false; }
 }
@@ -997,7 +1169,7 @@ function renderFood(data, title) {
     <p class="lead">${esc(data.reply)}</p>
     ${cards || `<div class="note">${icon("info")}<span>No matches found. Try a different area or dish.</span></div>`}
     ${data.tip ? `<div class="note">${icon("info")}<span>${esc(data.tip)}</span></div>` : ""}`;
-  $("#backBtn").addEventListener("click", () => { $("#query").value = ""; resetHome(); });
+  $("#backBtn").addEventListener("click", goHome);
   document.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", () => {
     const p = picks.find(x => x.centre.id === b.dataset.open); openCentre(p.centre);
   }));
@@ -1061,7 +1233,8 @@ function renderMenu(data) {
     ${list.length ? `<p class="disclaim">Nutrition values are AI estimates for a typical portion and can vary by stall by about 20%.</p>` : ""}`;
 }
 
-loadCentres();
+// first load: fetch centres, then restore whatever screen the address bar points at
+loadCentres().then(applyRoute);
 </script>
 </body>
 </html>

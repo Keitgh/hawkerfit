@@ -61,8 +61,16 @@ def _sb_request(method: str, path: str, body=None, prefer: str | None = None):
         raise RatingsError("Can't reach the ratings database right now.")
 
 
+MIN_VOTES_TO_SHOW = 3  # hide averages until a few different people have voted
+
+
+def _salt() -> str:
+    # A server-side secret, so the stored hashes can't be reversed back into IP addresses.
+    return os.environ.get("RATING_SALT") or os.environ.get("SUPABASE_KEY") or "hawkerfit-local"
+
+
 def _voter_hash(voter: str) -> str:
-    return hashlib.sha256(f"hawkerfit:{voter}".encode()).hexdigest()[:32]
+    return hashlib.sha256(f"hawkerfit:{_salt()}:{voter}".encode()).hexdigest()[:32]
 
 
 def _load_rows() -> list[dict]:
@@ -102,17 +110,19 @@ def summary() -> dict[str, dict]:
         if a["prices"]:
             p = sorted(a["prices"])
             price = p[len(p) // 2]  # median price level
+        enough = len(a["stars"]) >= MIN_VOTES_TO_SHOW
         out[cid] = {
-            "rating": round(sum(a["stars"]) / len(a["stars"]), 1) if a["stars"] else None,
+            "rating": round(sum(a["stars"]) / len(a["stars"]), 1) if a["stars"] and enough else None,
             "count": len(a["stars"]),
-            "price": price,
-            "price_label": PRICE_LABELS.get(price),
+            "price": price if len(a["prices"]) >= MIN_VOTES_TO_SHOW else None,
+            "price_label": PRICE_LABELS.get(price) if len(a["prices"]) >= MIN_VOTES_TO_SHOW else None,
         }
     return out
 
 
 def submit(centre_id: str, voter: str, stars: int | None, price: int | None) -> None:
-    """Save (or update) one visitor's vote for one centre."""
+    """Save (or update) one vote per voter per centre. `voter` is decided by the server
+    (the visitor's network address), so clearing the browser doesn't give extra votes."""
     row = {"centre_id": centre_id, "voter": _voter_hash(voter), "stars": stars, "price": price}
     if _supabase():
         _sb_request("POST", "ratings?on_conflict=centre_id,voter", [row],

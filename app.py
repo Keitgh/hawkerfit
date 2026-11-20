@@ -8,6 +8,7 @@ import base64
 import json
 import os
 import threading
+import time
 from collections import defaultdict
 from pathlib import Path
 
@@ -39,8 +40,17 @@ _usage = {"day": None, "site": 0, "visitors": defaultdict(int)}
 
 
 def _visitor(request: Request) -> str:
-    fwd = request.headers.get("x-forwarded-for")  # set by the hosting proxy
-    return fwd.split(",")[0].strip() if fwd else (request.client.host if request.client else "unknown")
+    """The visitor's network address, as seen by the hosting provider's proxy.
+    Prefer headers the edge proxy sets itself (visitors can't fake these), then the
+    right-most X-Forwarded-For entry (added by the proxy, not the visitor)."""
+    for h in ("cf-connecting-ip", "true-client-ip"):
+        v = request.headers.get(h)
+        if v:
+            return v.strip()
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        return fwd.split(",")[-1].strip()
+    return request.client.host if request.client else "unknown"
 
 
 def take_quota(request: Request) -> str:
@@ -304,8 +314,9 @@ def centres(lat: float | None = None, lng: float | None = None):
             "today": sg_data.now_sg().strftime("%a %d %b %Y")}
 
 
-RATE_PER_VISITOR_DAILY = 60
-_rate_usage = {"day": None, "visitors": defaultdict(int)}
+RATE_PER_VISITOR_DAILY = 25   # different centres one person can rate per day
+RATE_COOLDOWN_SECONDS = 4     # stops rapid-fire scripted voting
+_rate_usage = {"day": None, "visitors": defaultdict(int), "last": {}}
 
 
 class RateRequest(BaseModel):
@@ -330,15 +341,21 @@ def rate(req: RateRequest, request: Request):
 
     today = sg_data.now_sg().date().isoformat()
     who = _visitor(request)
+    now = time.time()
     with _usage_lock:
         if _rate_usage["day"] != today:
-            _rate_usage.update(day=today, visitors=defaultdict(int))
+            _rate_usage.update(day=today, visitors=defaultdict(int), last={})
+        if now - _rate_usage["last"].get(who, 0) < RATE_COOLDOWN_SECONDS:
+            raise HTTPException(429, "Slow down a little! Try again in a few seconds.")
         if _rate_usage["visitors"][who] >= RATE_PER_VISITOR_DAILY:
             raise HTTPException(429, "That's a lot of ratings for one day! Try again tomorrow.")
         _rate_usage["visitors"][who] += 1
+        _rate_usage["last"][who] = now
 
     try:
-        ratings.submit(req.centre_id, req.voter, req.stars, req.price)
+        # One vote per network address per centre: voting again just updates your earlier vote,
+        # even if you clear your browser. (The browser's ID is no longer trusted for this.)
+        ratings.submit(req.centre_id, f"ip:{who}", req.stars, req.price)
     except ratings.RatingsError as e:
         raise HTTPException(503, str(e))
     s = ratings.summary().get(req.centre_id, {})
@@ -382,10 +399,11 @@ def recommend(req: FoodRequest, request: Request):
         lines.append(f"Rain expected now ({weather.get('valid_text') or 'next 2 hours'}) in: "
                      f"{', '.join(rainy) or 'nowhere - dry island-wide'}.")
     scores = ratings.summary()
-    rated = sorted(((cid, s) for cid, s in scores.items() if s.get("count")),
+    rated = sorted(((cid, s) for cid, s in scores.items() if s.get("rating") is not None and s["count"] >= 5),
                    key=lambda kv: -kv[1]["count"])[:40]
     if rated:
-        lines.append("HawkerFit user ratings (prefer well-rated centres when it fits): " + "; ".join(
+        lines.append("HawkerFit user ratings (a gentle hint only: prefer well-rated centres when it fits, never "
+                     "call any centre bad or the worst, and don't quote low scores): " + "; ".join(
             f'{cid} {s["rating"]} stars ({s["count"]} votes)'
             + (f', typical meal {s["price_label"]}' if s.get("price_label") else "") for cid, s in rated))
     has_loc = in_singapore(req.lat, req.lng)
