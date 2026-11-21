@@ -8,13 +8,6 @@ menus for calories and macros.
 - Weather: NEA 2-hour forecast, via data.gov.sg
 - AI: Claude API (Anthropic)
 
-## Run locally
-```
-pip install -r requirements.txt
-copy .env.example .env      # then put your ANTHROPIC_API_KEY in .env
-python -m uvicorn app:app --port 8000
-```
-
 ## Deploy (Render)
 - Build command: `pip install -r requirements.txt`
 - Start command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
